@@ -81,3 +81,18 @@ class Message(models.Model):
     class Meta:
         verbose_name = '用户消息'
         verbose_name_plural = verbose_name
+
+
+class SystemSettings(models.Model):
+    # TODO 理论上系统设置是绑定站点
+    water_min_level = models.CharField(max_length=10, verbose_name="水位坐标最小值")
+    water_max_level = models.CharField(max_length=10, verbose_name="水位坐标最大值")
+    flow_min_level = models.CharField(max_length=10, verbose_name="流量坐标最小值")
+    flow_max_level = models.CharField(max_length=10, verbose_name="流量坐标最大值")
+    deviate_value = models.CharField(max_length=10, verbose_name="偏离报警阈值")
+    volt_value = models.CharField(max_length=10, verbose_name="电压报警阈值")
+    is_alarm = models.BooleanField(default=True, verbose_name="是否报警")
+
+    class Meta:
+        verbose_name = '系统设置'
+        verbose_name_plural = verbose_name

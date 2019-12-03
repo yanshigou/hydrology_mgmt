@@ -6,8 +6,8 @@ from django.contrib.auth.hashers import make_password
 from django.shortcuts import render
 from rest_framework.views import APIView
 from .forms import RegisterForm, LoginForm, UploadImageForm, UserInfoForm, PasswordForm, CompanySerializer, \
-    UserProfileSerializer, MessageSerializer
-from .models import UserProfile, HistoryRecord, Message, CompanyModel
+    UserProfileSerializer, MessageSerializer, SystemSettingsForm
+from .models import UserProfile, HistoryRecord, Message, CompanyModel, SystemSettings
 from myutils.mixin_utils import LoginRequiredMixin
 from myutils.utils import create_history_record, make_message, jpush_function_extra
 from django.core.urlresolvers import reverse
@@ -1024,4 +1024,41 @@ class MessageApiView(APIView):
                 "error_no": -1,
                 "info": str(e)
             })
-        
+
+
+# TODO 目前为全局设置，以后会绑定到站点上
+class SystemSettingsView(LoginRequiredMixin, View):
+    def get(self, request):
+        sys_settings = SystemSettings.objects.all()
+        if sys_settings:
+            sys_settings = sys_settings[0]
+        return render(request, 'sys_settings.html', {"sys_settings": sys_settings})
+
+    def post(self, request):
+        sys_id = request.POST.get('sys_id')
+        print(sys_id)
+        if sys_id:
+            sys_settings = SystemSettings.objects.get(id=sys_id)
+            settings_form = SystemSettingsForm(request.POST, instance=sys_settings)
+            if settings_form.is_valid():
+                settings_form.save()
+                create_history_record(request.user, "修改系统设置")
+                return JsonResponse({"status": "success", "msg": "修改设置成功"})
+            else:
+                print(settings_form.errors)
+                return JsonResponse({
+                    "status": "fail",
+                    "msg": "修改设置成功",
+                })
+        else:
+            settings_form = SystemSettingsForm(request.POST)
+            if settings_form.is_valid():
+                settings_form.save()
+                create_history_record(request.user, "设置系统设置")
+                return JsonResponse({"status": "success", "msg": "设置成功"})
+            else:
+                print(settings_form.errors)
+                return JsonResponse({
+                    "status": "fail",
+                    "msg": "设置失败",
+                })

@@ -2,7 +2,7 @@
 __author__ = "dzt"
 __date__ = "2019/9/4"
 from django import forms
-from users.models import UserProfile, CompanyModel, Message
+from users.models import UserProfile, CompanyModel, Message, SystemSettings
 from rest_framework import serializers
 
 
@@ -55,3 +55,9 @@ class MessageSerializer(serializers.ModelSerializer):
     class Meta:
         model = Message
         fields = '__all__'
+
+
+class SystemSettingsForm(forms.ModelForm):
+    class Meta:
+        model = SystemSettings
+        fields = "__all__"
