@@ -1,0 +1,111 @@
+{% extends 'blank.html' %}
+{% load  staticfiles %}
+
+{% block title %}
+系统设置
+{% endblock %}
+{% block topbar_title %}
+系统设置
+{% endblock %}
+{% block page_content %}
+<div class="container-fluid" style="font-size:14px">
+
+    <!-- Page Heading -->
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'index' %}">主页</a></li>
+        <li class="breadcrumb-item active">系统设置</li>
+    </ol>
+    <form class="form-horizontal form-label-left form-control-plaintext" id="sys_form">
+        <input type="hidden" value="{{ sys_settings.id }}" name="sys_id">
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">水位坐标最小值：</label>
+            <div class="col-md-3 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="water_min_level" value="{{ sys_settings.water_min_level }}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">水位坐标最大值：</label>
+            <div class="col-md-3 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="water_max_level" value="{{ sys_settings.water_max_level }}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">流量坐标最小值：</label>
+            <div class="col-md-3 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="flow_min_level" value="{{ sys_settings.flow_min_level }}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">流量坐标最大值：</label>
+            <div class="col-md-3 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="flow_max_level" value="{{ sys_settings.flow_max_level }}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">偏离报警阈值：</label>
+            <div class="col-md-3 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="deviate_value" value="{{ sys_settings.deviate_value }}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">电压报警阈值：</label>
+            <div class="col-md-3 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="volt_value" value="{{ sys_settings.volt_value }}">
+            </div>
+        </div>
+
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">是否报警：</label>
+            <div class="col-md-3 col-sm-5 col-xs-12">
+                <select class="form-control select" name="is_alarm">
+                    {% if sys_settings.is_alarm %}
+                    <option value="1" selected>是</option>
+                    <option value="0">否</option>
+                    {% else %}
+                    <option value="1">是</option>
+                    <option value="0" selected>否</option>
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+
+
+        <div class="ln_solid"></div>
+        <div class="form-group">
+            <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                <button type="button" id="sys_button" class="btn btn-primary btn-sm">确认修改</button>
+            </div>
+        </div>
+        {% csrf_token %}
+    </form>
+</div>
+{% endblock %}
+
+{% block other_js %}
+<script>
+    $('#sys_button').on('click', function () {
+        $.ajax({
+            cache: false,
+            type: 'post',
+            dataType: 'json',
+            url: "{% url 'sys_settings' %}",
+            data: $("#sys_form").serialize(),
+            async: true,
+            success: function (data) {
+                if (data.status === "success") {
+                    alert(data.msg);
+                    window.location.replace("{% url 'sys_settings' %}")
+                } else {
+                    alert(data.msg)
+                }
+            }
+        })
+    })
+</script>
+{% endblock %}
