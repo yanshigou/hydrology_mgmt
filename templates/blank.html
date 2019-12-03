@@ -1,0 +1,347 @@
+<!DOCTYPE html>
+{% load staticfiles %}
+<html lang="en">
+
+<head>
+
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="IE=edge">
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+    <meta name="description" content="">
+    <meta name="author" content="">
+
+    <title>水文在线监测系统 - {% block title %}首页{% endblock %}</title>
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.ico' %}">
+    <!-- Custom fonts for this template-->
+    <link href="{% static 'vendor/fontawesome-free/css/all.min.css' %}" rel="stylesheet" type="text/css">
+
+    <!-- Custom styles for this template-->
+    <link href="{% static 'css/sb-admin-2.min.css' %}" rel="stylesheet">
+    {% block other_css %}
+    {% endblock %}
+    {% block head_scripts %}
+    {% endblock %}
+
+</head>
+
+<body id="page-top">
+
+<!-- Page Wrapper -->
+<div id="wrapper">
+
+    <!-- Sidebar -->
+    <ul class="navbar-nav bg-gradient-primary sidebar sidebar-dark accordion" id="accordionSidebar">
+
+        <!-- Sidebar - Brand -->
+        <a class="sidebar-brand d-flex align-items-center justify-content-center" href="{% url 'index' %}">
+            <img src="{% static 'images/favicon.ico' %}" alt="" style="width: 40px; height: 40px">
+            <div class="sidebar-brand-text mx-0 " style = "padding-left: 10px;">水文在线监测系统</div>
+        </a>
+
+        <!-- Divider -->
+        <hr class="sidebar-divider my-0">
+
+        <!-- Nav Item - Dashboard -->
+        <li {% if request.path == '/' %}class="nav-item active table-active" {% else %}class="nav-item"{% endif %}>
+            <a class="nav-link" href="{% url 'index' %}">
+                <i class="fas fa-fw fa-desktop"></i>
+                <span style="font-size: 15px">主页</span></a>
+        </li>
+
+        <!-- Divider -->
+        <hr class="sidebar-divider">
+
+
+        <!-- Heading -->
+
+        <!-- Nav Item - Pages Collapse Menu -->
+        <li {% if 'dataInfo/deviceDataInfo' in request.path or 'dataInfo/statistical' in request.path or 'dataInfo/locationInfo' in request.path%}class="nav-item active table-active"
+            {% else %}class="nav-item"{% endif %}>
+            <a class="nav-link" href="">
+                <i class="fas fa-fw fa-house-damage"></i>
+                <span style="font-size: 15px">站点管理</span>
+            </a>
+        </li>
+        <hr class="sidebar-divider">
+        <li {% if 'dataInfo/recordInfo' in request.path  or 'dataInfo/recordLocationInfo' in request.path or 'dataInfo/recordStatistical' in request.path  %}class="nav-item active table-active"
+            {% else %}class="nav-item"{% endif %}>
+            <a class="nav-link" href="">
+                <i class="fas fa-fw fa-tags"></i>
+                <span style="font-size: 15px">流量信息</span>
+            </a>
+        </li>
+
+
+        {#    {% if request.user.permission == "superadmin" %}#}
+        <!-- Divider -->
+        <hr class="sidebar-divider">
+
+        <!-- Heading -->
+
+        <!-- Nav Item - Charts -->
+        <li {% if 'devices/info' in request.path or 'devices/deviceModify' in request.path or 'devices/deviceAdd' in request.path or 'devices/deviceStatus' in request.path or "devices/deviceView" in request.path %}class="nav-item active table-active"
+            {% else %}class="nav-item"{% endif %}>
+            <a class="nav-link" href="">
+                <i class="fas fa-fw fa-database"></i>
+                <span style="font-size: 15px">水量数据</span></a>
+        </li>
+        <!-- Divider -->
+        <hr class="sidebar-divider">
+        {% if request.user.permission == "superadmin" or request.user.permission == "admin" %}
+
+            <li {% if 'users/allUsers' in request.path or "users/changePermission" in request.path or "users/register/" in request.path  or "users/register2" in request.path %}class="nav-item active table-active"
+                {% else %}class="nav-item"{% endif %}>
+                <a class="nav-link" href="{% url 'all_users' %}">
+                    <i class="fas fa-fw fa-user"></i>
+                    <span style="font-size: 15px">用户管理</span></a>
+            </li>
+        {% endif %}
+        <hr class="sidebar-divider">
+        {% if request.user.permission == "superadmin" %}
+            <li {% if 'users/companyInfo' in request.path or "users/addCompany" in request.path or "users/companyDel" in request.path %}class="nav-item active table-active"
+                {% else %}class="nav-item"{% endif %}>
+                <a class="nav-link" href="{% url 'company_info' %}">
+                    <i class="fas fa-fw fa-house-damage"></i>
+                    <span style="font-size: 15px">公司管理</span></a>
+            </li>
+        {% endif %}
+        <hr class="sidebar-divider">
+        <li {% if 'users/sysSettings' in request.path %}class="nav-item active table-active"
+            {% else %}class="nav-item"{% endif %}>
+            <a class="nav-link" href="">
+                <i class="fas fa-fw fa-cogs"></i>
+                <span style="font-size: 15px">系统设置</span></a>
+        </li>
+
+        {% if not request.user.is_authenticated %}
+            <hr class="sidebar-divider d-none d-md-block">
+
+            <li class="nav-item">
+                <a class="nav-link" href="{% url 'login' %}">
+                    <i class="fas fa-fw fa-laptop"></i>
+                    <span>登录</span></a>
+                <a class="nav-link" href="{% url 'register' %}">
+                    <i class="fas fa-fw fa-language"></i>
+                    <span>注册</span></a>
+            </li>
+        {% endif %}
+
+
+        <!-- Divider -->
+        <hr class="sidebar-divider d-none d-md-block">
+
+
+        <!-- Sidebar Toggler (Sidebar) -->
+        <div class="text-center d-none d-md-inline">
+            <button class="rounded-circle border-0" id="sidebarToggle"></button>
+        </div>
+
+    </ul>
+    <!-- End of Sidebar -->
+
+    <!-- Content Wrapper -->
+    <div id="content-wrapper" class="d-flex flex-column">
+
+        <!-- Main Content -->
+        <div id="content">
+
+            <!-- Topbar -->
+            <nav class="navbar navbar-expand navbar-light bg-white topbar mb-4 static-top shadow">
+                <h1 class="h5 mb-4 text-gray-700" style="margin-top: 21px;">{% block topbar_title %}
+                    主页{% endblock %}</h1>
+                <!-- Sidebar Toggle (Topbar) -->
+                <button id="sidebarToggleTop" class="btn btn-link d-md-none rounded-circle mr-3">
+                    <i class="fa fa-bars"></i>
+                </button>
+
+
+                <!-- Topbar Navbar -->
+                <ul class="navbar-nav ml-auto">
+
+                    <!-- Nav Item - Search Dropdown (Visible Only XS) -->
+                    <li class="nav-item dropdown no-arrow d-sm-none">
+                        <a class="nav-link dropdown-toggle" href="#" id="searchDropdown" role="button"
+                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-search fa-fw"></i>
+                        </a>
+                        <!-- Dropdown - Messages -->
+                        <div class="dropdown-menu dropdown-menu-right p-3 shadow animated--grow-in"
+                             aria-labelledby="searchDropdown">
+                            <form class="form-inline mr-auto w-100 navbar-search">
+                                <div class="input-group">
+                                    <input type="text" class="form-control bg-light border-0 small"
+                                           placeholder="Search for..." aria-label="Search"
+                                           aria-describedby="basic-addon2">
+                                    <div class="input-group-append">
+                                        <button class="btn btn-primary" type="button">
+                                            <i class="fas fa-search fa-sm"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            </form>
+                        </div>
+                    </li>
+
+                    <!-- Nav Item - Alerts -->
+                    <li class="nav-item dropdown no-arrow mx-1">
+                        <a class="nav-link dropdown-toggle" href="#" id="alertsDropdown" role="button"
+                           data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+                            <i class="fas fa-bell fa-fw"></i>
+                            <!-- Counter - Alerts -->
+                            <span class="badge badge-danger badge-counter">{{ request.user.unread_nums }}</span>
+                        </a>
+                        <!-- Dropdown - Alerts -->
+                        <div class="dropdown-list dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                             aria-labelledby="alertsDropdown">
+                            <h6 class="dropdown-header">
+                                消息列表
+                            </h6>
+                            <!-- bg-primary蓝色 bg-success绿色 bg-warning黄色 -->
+                            {% for content in request.user.unread_contents %}
+                                <a class="dropdown-item d-flex align-items-center" href="{% url 'message' %}">
+                                    <div class="mr-3">
+                                        <div {% if content.m_type == 1 %}class="icon-circle bg-success"
+                                             {% elif content.m_type == 0 %}class="icon-circle bg-primary"
+                                             {% elif content.m_type == -1 %}class="icon-circle bg-warning"
+                                             {% else %}class="icon-circle bg-primary"
+                                             {% endif %}>
+                                            <i class="fas fa-file-alt text-white"></i>
+                                        </div>
+                                    </div>
+                                    <div>
+                                        <div class="small text-gray-500">{{ content.time }}</div>
+                                        <span class="font-weight-bold">{{ content.content }}</span>
+                                    </div>
+                                </a>
+                            {% endfor %}
+                            <a class="dropdown-item text-center small text-gray-500"
+                               href="{% url 'message' %}">查看全部消息</a>
+                        </div>
+                    </li>
+
+
+                    <div class="topbar-divider d-none d-sm-block"></div>
+
+                    <!-- Nav Item - User Information -->
+                    <li class="nav-item dropdown no-arrow">
+                        {% if request.user.is_authenticated %}
+                            <a class="nav-link dropdown-toggle" href="#" id="userDropdown" role="button"
+                               data-toggle="dropdown" aria-haspopup="true" aria-expanded="false">
+
+                                <span class="mr-2 d-none d-lg-inline text-gray-600 small">{{ request.user.username }}</span>
+                                <img class="img-profile rounded-circle" src="{{ MEDIA_URL }}{{ request.user.image }}">
+
+                            </a>
+                        {% else %}
+                            <a class="nav-link dropdown-toggle" href="{% url 'login' %}">登录</a>
+                        {% endif %}
+                        <!-- Dropdown - User Information -->
+                        <div class="dropdown-menu dropdown-menu-right shadow animated--grow-in"
+                             aria-labelledby="userDropdown">
+                            {#                            <a class="dropdown-item" href="{% url 'user_info' %}">#}
+                            {#                                <i class="fas fa-user fa-sm fa-fw mr-2 text-gray-400"></i>#}
+                            {#                                个人中心#}
+                            {#                            </a>#}
+                            {#                            <a class="dropdown-item" href="{% url 'settings' %}">#}
+                            {#                                <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>#}
+                            {#                                设置#}
+                            {#                            </a>#}
+                            <a class="dropdown-item" href="{% url 'change_password' %}">
+                                <i class="fas fa-cogs fa-sm fa-fw mr-2 text-gray-400"></i>
+                                修改密码
+                            </a>
+                            <a class="dropdown-item" href="{% url 'history_record' %}">
+                                <i class="fas fa-list fa-sm fa-fw mr-2 text-gray-400"></i>
+                                历史操作
+                            </a>
+{#                            {% if request.user.permission == "superadmin" or request.user.permission == "admin" %}#}
+{#                                <a class="dropdown-item" href="">#}
+{#                                    <i class="fas fa-star fa-sm fa-fw mr-2 text-gray-400"></i>#}
+{#                                    白名单管理#}
+{#                                </a>#}
+{#                            {% endif %}#}
+                            <div class="dropdown-divider"></div>
+                            <a class="dropdown-item" href="#" data-toggle="modal" data-target="#logoutModal">
+                                <i class="fas fa-sign-out-alt fa-sm fa-fw mr-2 text-gray-400"></i>
+                                退出登录
+                            </a>
+                        </div>
+                    </li>
+
+                </ul>
+
+            </nav>
+            <!-- End of Topbar -->
+
+            <!-- Begin Page Content -->
+            {% block page_content %}
+                <iframe src="" width="100%" height="750px" frameborder="0"  style="font-size:14px">
+                 </iframe>
+            {% endblock %}
+            <!-- /.container-fluid -->
+
+        </div>
+        <!-- End of Main Content -->
+
+        <!-- Footer -->
+        <footer class="sticky-footer bg-white">
+            <div class="container my-auto">
+                <div class="copyright text-center my-auto">
+                    <span>Copyright &copy; 无锡海鹰加科海洋电子有限公司 2019</span>
+                </div>
+            </div>
+        </footer>
+        <!-- End of Footer -->
+
+    </div>
+    <!-- End of Content Wrapper -->
+
+</div>
+<!-- End of Page Wrapper -->
+
+<!-- Scroll to Top Button-->
+<a class="scroll-to-top rounded" href="#page-top">
+    <i class="fas fa-angle-up"></i>
+</a>
+
+<!-- Logout Modal-->
+<div class="modal fade" id="logoutModal" tabindex="-1" role="dialog" aria-labelledby="exampleModalLabel"
+     aria-hidden="true">
+    <div class="modal-dialog" role="document">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="exampleModalLabel">确定退出吗?</h5>
+                <button class="close" type="button" data-dismiss="modal" aria-label="Close">
+                    <span aria-hidden="true">×</span>
+                </button>
+            </div>
+            <div class="modal-body">如果您确定退出请点击下方按钮</div>
+            <div class="modal-footer">
+                <button class="btn btn-secondary" type="button" data-dismiss="modal">取消</button>
+                <a class="btn btn-primary" href="{% url 'logout' %}">确定退出</a>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Bootstrap core JavaScript-->
+<script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+<script src="{% static 'vendor/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+<!-- Core plugin JavaScript-->
+<script src="{% static 'vendor/jquery-easing/jquery.easing.min.js' %}"></script>
+
+<!-- Custom scripts for all pages-->
+<script src="{% static 'js/sb-admin-2.min.js' %}"></script>
+
+<!-- Page level plugins -->
+<script src="{% static 'vendor/chart.js/Chart.min.js' %}"></script>
+
+<!-- Page level custom scripts -->
+<script src="{% static 'js/demo/chart-area-demo.js' %}"></script>
+<script src="{% static 'js/demo/chart-pie-demo.js' %}"></script>
+{% block other_js %}
+{% endblock %}
+</body>
+
+</html>

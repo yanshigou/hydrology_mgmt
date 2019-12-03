@@ -1,0 +1,122 @@
+{% extends 'blank.html' %}
+{% load  staticfiles %}
+
+{% block title %}
+用户新增
+{% endblock %}
+{% block topbar_title %}
+用户新增
+{% endblock %}
+
+{% block other_css %}
+<link rel="stylesheet" href="{% static 'css/jquery-editable-select.css' %}">
+{% endblock %}
+
+{% block head_scripts %}
+<script src="{% static 'polyfill.js' %}"></script>
+<script src="{% static 'cascader.js' %}"></script>
+{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid" style="font-size:14px">
+
+    <!-- Page Heading -->
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'index' %}">主页</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'all_users' %}">用户管理</a></li>
+        <li class="breadcrumb-item active">新增用户</li>
+    </ol>
+    <form class="form-horizontal form-label-left form-group-sm form-control-sm" id="user_form">
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">用户名 *</label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="username" value="">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">权限 *</label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <select class="form-control mb-sm-0" name="permission">
+                    {% if permission == "superadmin" %}
+                    <option value="user" selected>用户</option>
+                    {#                            <option value="other">其他类型用户</option>#}
+                    <option value="admin">管理员</option>
+                    {% elif permission == "admin" %}
+                    <option value="user" selected>用户</option>
+                    {#                            <option value="other">其他类型用户</option>#}
+                    {#                            <option value="admin" style="color: red" disabled>管理员</option>#}
+                    {% else %}
+                    <option value="" style="color: red" selected>没有权限</option>
+                    <option value="user" style="color: red" disabled>用户</option>
+                    {#                            <option value="other" style="color: red" disabled>其他类型用户</option>#}
+                    {#                            <option value="admin" style="color: red" disabled>管理员</option>#}
+                    {% endif %}
+                </select>
+            </div>
+        </div>
+
+        {% if permission == "superadmin" %}
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">所属公司 *</label>
+            <div class="col-md-6 col-sm-6 col-xs-12">
+                <select name="company" class="form-control col-md-7 col-xs-12">
+                    {% for c in company_id %}
+                    <option value="{{ c.id }}">{{ c.company_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        {% else %}
+        <input type="hidden" class="form-control" name="company" value="{{company_id}}">
+        {% endif %}
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">密码 </label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" placeholder="默认初始密码为123456" name="password">
+            </div>
+        </div>
+
+
+        <div class="ln_solid"></div>
+        <div class="form-group">
+            <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                <button type="button" id="register_button" class="btn btn-primary">添加</button>
+            </div>
+        </div>
+        {% csrf_token %}
+    </form>
+</div>
+{% endblock %}
+
+{% block other_js %}
+<script src="{% static 'js/jquery-editable-select.js' %}"></script>
+<script src="{% static 'laydate/laydate.js' %}"></script>
+<script>
+    $('#basic').editableSelect({
+        filter: false
+    });
+</script>
+<script>
+    $('#register_button').on('click', function () {
+        $.ajax({
+            cache: false,
+            type: 'post',
+            dataType: 'json',
+            url: "{% url 'register' %}",
+            data: $("#user_form").serialize(),
+            async: true,
+            success: function (data) {
+                if (data.status === "success") {
+                    alert(data.msg);
+                    window.location.replace("{% url 'all_users' %}")
+                } else {
+                    alert(data.msg)
+                }
+            }
+        })
+    })
+</script>
+{% endblock %}

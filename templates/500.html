@@ -1,0 +1,24 @@
+{% extends 'blank.html' %}
+
+{% block title %}
+    服务器内部错误
+{% endblock %}
+{% block topbar_title %}
+服务器内部错误
+{% endblock %}
+
+{% block page_content %}
+    <!-- Begin Page Content -->
+        <div class="container-fluid">
+
+          <!-- 404 Error Text -->
+          <div class="text-center">
+            <div class="error mx-auto" data-text="500">500</div>
+            <p class="lead text-gray-800 mb-5">服务器内部错误！</p>
+            <p class="text-gray-500 mb-0">服务器内部可能出现了点问题，请联系管理员...</p>
+            <a href="{% url 'index' %}">&larr; 回到主页！</a>
+          </div>
+
+        </div>
+        <!-- /.container-fluid -->
+{% endblock %}
