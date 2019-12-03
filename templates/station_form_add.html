@@ -1,0 +1,127 @@
+{% extends 'blank.html' %}
+{% load  staticfiles %}
+
+{% block title %}
+测站点新增
+{% endblock %}
+{% block topbar_title %}
+测站点新增
+{% endblock %}
+
+{% block other_css %}
+<link rel="stylesheet" href="{% static 'css/jquery-editable-select.css' %}">
+<link href="{% static 'css/bootstrap-select.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block head_scripts %}
+<script src="{% static 'polyfill.js' %}"></script>
+<script src="{% static 'cascader.js' %}"></script>
+{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid" style="font-size:14px">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'index' %}">主页</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'station_info' %}">测站点管理</a></li>
+        <li class="breadcrumb-item active">测站点新增</li>
+    </ol>
+    <!-- Page Heading -->
+    <form class="form-horizontal form-label-left form-control-plaintext" id="station_info_form">
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">站名 *</label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="station_name" value="">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">站码 *</label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="station_code" value="">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">河流 *</label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="river" value="">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">经度 *</label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="longitude" value="">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">纬度 *</label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="latitude" value="">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">测站点地址 *</label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="station_address" value="">
+            </div>
+        </div>
+        {% if request.user.permission == "superadmin" %}
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">所属公司 *</label>
+            <div class="col-md-6 col-sm-6 col-xs-12">
+                <select name="company" class="form-control col-md-7 col-xs-12">
+                    {% for c in company_id %}
+                    <option value="{{ c.id }}">{{ c.company_name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+        {% else %}
+        <input type="hidden" value="{{ company_id }}" name="company">
+        {% endif %}
+
+        <div class="ln_solid"></div>
+        <div class="form-group">
+            <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                <button type="button" id="station_info_button" class="btn btn-primary">确定</button>
+            </div>
+        </div>
+        {% csrf_token %}
+    </form>
+</div>
+{% endblock %}
+
+{% block other_js %}
+<script src="{% static 'js/jquery-editable-select.js' %}"></script>
+<script src="{% static 'laydate/laydate.js' %}"></script>
+<script src="{% static 'js/bootstrap-select.min.js' %}"></script>
+<script>
+    $('#basic').editableSelect({
+        filter: false
+    });
+</script>
+<script>
+    $('#station_info_button').on('click', function () {
+        $.ajax({
+            cache: false,
+            type: 'post',
+            dataType: 'json',
+            url: "{% url 'station_add' %}",
+            data: $("#station_info_form").serialize(),
+            async: true,
+            success: function (data) {
+                if (data.status === "success") {
+                    alert('新增成功');
+                    window.location.replace("{% url 'station_info' %}")
+                } else {
+                    alert(data.errors)
+                }
+            }
+        })
+    })
+</script>
+{% endblock %}

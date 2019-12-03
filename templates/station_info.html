@@ -1,0 +1,200 @@
+{% extends 'blank.html' %}
+{% load  staticfiles %}
+
+{% block title %}
+    测站点管理
+{% endblock %}
+{% block topbar_title %}
+    测站点管理
+{% endblock %}
+{% block other_css %}
+    <!-- Custom styles for this page -->
+    <link href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap-select.min.css' %}" rel="stylesheet">
+    <style>
+        option:nth-child(1) {
+            display: none;
+        }
+    </style>
+{% endblock %}
+
+{% block head_scripts %}
+    <script src="{% static 'polyfill.js' %}"></script>
+    <script src="{% static 'cascader.js' %}"></script>
+
+{% endblock %}
+
+{% block page_content %}
+    <div class="container-fluid" style="font-size:14px">
+
+        <!-- Page Heading -->
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'index' %}">主页</a></li>
+            <li class="breadcrumb-item active">测站点管理</li>
+        </ol>
+
+        <!-- DataTales Example -->
+        <div class="card shadow mb-4">
+            <div class="alert" style="display: none;"></div>
+            <div class="card-header py-3">
+                {#                <h6 class="m-0 font-weight-bold text-primary">设备详情</h6>#}
+                {% if request.user.permission == "superadmin" or request.user.permission == "admin" %}
+                    <a href="{% url 'station_add' %}">
+                        <button type="button" class="btn btn-sm btn-success">新增测站点</button>
+                    </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th>站名</th>
+                            <th>站码</th>
+                            <th>河流</th>
+                            <th>经度</th>
+                            <th>纬度</th>
+                            <th>状态</th>
+                            {% if request.user.permission == "superadmin" %}
+                                <th>所属公司</th>
+                            {% endif %}
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody id="t_body">
+                        {% for station in all_station %}
+                            <tr>
+                                <td>{{ station.station_name }}</td>
+                                <td>{{ station.station_code }}</td>
+                                <td>{{ station.river }}</td>
+                                <td>{{ station.longitude }}</td>
+                                <td>{{ station.latitude }}</td>
+                                <td {% if station.station_status %}style="color: green" {% else %}style="color: red"
+                                    {% endif %}>
+                                    {% if station.station_status %}有效{% else %}无效{% endif %}
+                                </td>
+                                {% if request.user.permission == "superadmin" %}
+                                    <td>{{ station.company.company_name }}</td>
+                                {% endif %}
+
+                                <td>
+                                    {% if request.user.permission == "superadmin" or request.user.permission == "admin" %}
+                                        <a href="{% url 'station_index' station.id %}" style="text-decoration:none">
+                                            <button type="button" class="btn btn-success btn-sm" style="line-height: 1">
+                                                进入
+                                            </button>
+                                        </a>
+                                        <a href="{% url 'station_modify' station.id %}" style="text-decoration:none">
+                                            <button type="button" class="btn btn-warning btn-sm" style="line-height: 1">
+                                                修改
+                                            </button>
+                                        </a>
+                                        {% if station.station_status %}
+                                            <button type="button" class="btn btn-danger btn-sm" style="line-height: 1"
+                                                    onclick="return enable_device({{ station.id }}, false)">设为无效
+                                            </button>{% else %}
+                                            <button type="button" class="btn btn-success btn-sm" style="line-height: 1"
+                                                    onclick="return enable_device({{ station.id }}, true)">设为有效
+                                            </button>
+                                        {% endif %}
+                                        <button type="button" class="btn btn-danger btn-sm"
+                                                onclick="return deviceb({{ station.id }})" style="line-height: 1">删除
+                                        </button>
+                                    {% endif %}
+                                </td>
+
+                            </tr>
+                        {% endfor %}
+
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block other_js %}
+
+    <!-- Page level plugins -->
+    <script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+
+    <!-- Page level custom scripts -->
+    <script src="{% static 'js/demo/datatables-demo.js' %}"></script>
+
+    <script src="{% static 'js/bootstrap-select.min.js' %}"></script>
+    <script src="{% static 'js/defaults-zh_CN.min.js' %}"></script>
+
+    <script>
+        function deviceb(station_id) {
+            var msg = "删除此设备将会无法恢复\n\n您真的确定要删除吗？";
+            if (confirm(msg) === true) {
+                if (station_id === undefined) {
+                    return false
+                }
+                $.ajax({
+                    cache: false,
+                    type: "POST",
+                    dataType: 'json',
+                    url: "{% url 'station_del' %}",
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        "station_id": station_id
+                    },
+                    async: true,
+                    success: function (data) {
+                        if (data.status === 'success') {
+                            alert('删除成功');
+                            location.reload();
+                        } else {
+                            alert(data.msg);
+                            location.reload();
+                        }
+
+                    }
+                });
+                return true;
+            }
+        }
+
+        function enable_device(station_id, is_active) {
+            var msg = "";
+            if (is_active === true) {
+                msg = "你确定要设为有效吗？";
+            } else {
+                msg = "你确定要设为无效吗？";
+            }
+            if (confirm(msg) === true) {
+
+                if (station_id === undefined) {
+                    return false
+                }
+                $.ajax({
+                    cache: false,
+                    type: "POST",
+                    dataType: 'json',
+                    url: "{% url 'station_status' %}",
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        "id": station_id,
+                        "station_status": is_active
+                    },
+                    async: true,
+                    success: function (data) {
+                        {
+                            alert(data.status);
+                        }
+                        location.reload();
+
+                    }
+                });
+                return true;
+            } else {
+                return false;
+            }
+        }
+    </script>
+{% endblock %}

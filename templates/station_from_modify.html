@@ -1,0 +1,119 @@
+{% extends 'blank.html' %}
+{% load  staticfiles %}
+
+{% block title %}
+测站点修改
+{% endblock %}
+{% block topbar_title %}
+测站点修改
+{% endblock %}
+{% block other_css %}
+<link rel="stylesheet" href="{% static 'css/jquery-editable-select.css' %}">
+<link href="{% static 'css/bootstrap-select.min.css' %}" rel="stylesheet">
+<style>
+    option:nth-child(1) {
+        display: none;
+    }
+</style>
+{% endblock %}
+
+{% block head_scripts %}
+<script src="{% static 'polyfill.js' %}"></script>
+<script src="{% static 'cascader.js' %}"></script>
+{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid" style="font-size:14px">
+
+    <!-- Page Heading -->
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'index' %}">主页</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'station_info' %}">测站点管理</a></li>
+        <li class="breadcrumb-item active">修改测站点</li>
+    </ol>
+    <form class="form-horizontal form-label-left form-control-plaintext" id="device_info_form">
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">站名 *</label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="station_name" value="{{ station_info.station_name }}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">站码 *</label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="station_code" value="{{ station_info.station_code }}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">河流 *</label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="river" value="{{ station_info.river }}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">经度 *</label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="longitude" value="{{ station_info.longitude }}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">纬度 *</label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="latitude" value="{{ station_info.latitude }}">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">测站点地址 *</label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="station_address" value="{{ station_info.station_address }}">
+            </div>
+        </div>
+
+        <input type="hidden" value="{{ station_info.company_id }}" name="company">
+
+        <div class="ln_solid"></div>
+        <div class="form-group">
+            <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                <button type="button" id="device_info_button" class="btn btn-primary">确认修改</button>
+            </div>
+        </div>
+        {% csrf_token %}
+    </form>
+</div>
+{% endblock %}
+
+{% block other_js %}
+<script src="{% static 'laydate/laydate.js' %}"></script>
+<script src="{% static 'js/bootstrap-select.min.js' %}"></script>
+<script>
+    $('#device_info_button').on('click', function () {
+        $.ajax({
+            cache: false,
+            type: 'post',
+            dataType: 'json',
+            url: "",
+            data: $("#device_info_form").serialize(),
+            async: true,
+            success: function (data) {
+                if (data.status === "success") {
+                    alert('修改信息成功');
+                    window.location.href = "{% url 'station_info' %}"
+                } else {
+                    if (data.msg) {
+                        alert(data.msg)
+                    } else {
+                        alert('修改信息失败')
+                    }
+                }
+            }
+        })
+    })
+</script>
+
+{% endblock %}

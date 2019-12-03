@@ -1,0 +1,166 @@
+{% extends 'blank.html' %}
+{% load staticfiles %}
+{% block title %}
+    大断面
+{% endblock %}
+{% block topbar_title %}
+    大断面
+{% endblock %}
+{% block other_css %}
+    <link href="{% static 'css/bootstrap-select.min.css' %}" rel="stylesheet">
+    <style>
+        option:nth-child(1) {
+            display: none;
+        }
+    </style>
+{% endblock %}
+{% block head_scripts %}
+    <script src="{% static 'polyfill.js' %}"></script>
+    <script src="{% static 'cascader.js' %}"></script>
+    <script src="{% static 'echarts/dist/echarts.js' %}"></script>
+{% endblock %}
+
+{% block page_content %}
+    <div class="container-fluid" style="font-size:14px">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'index' %}">主页</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'station_info' %}">测站点管理</a></li>
+            <li class="breadcrumb-item active">大断面</li>
+        </ol>
+        <div id="main" style="width: auto;height: 600px;"></div>
+        <div>
+            <p>
+                <label >实测日期：</label>
+                <input type="text" class="" id="date_time" name="time" value="{{ time }}">
+            </p>
+
+            <p>
+                <label class="control-label">数据文件：</label>
+                <input name="input-b5" type="file" multiple>
+            </p>
+            <input type="submit" value="绘制"></input>
+{#            <button type="button" class="btn btn-success btn-sm" style="line-height: 1">绘制</button>#}
+
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block other_js %}
+    <script src="{% static 'laydate/laydate.js' %}"></script>
+    <script src="{% static 'js/bootstrap-select.min.js' %}"></script>
+    <script src="{% static 'js/defaults-zh_CN.min.js' %}"></script>
+    <script type="text/javascript">
+        $(function () {
+            // 基于准备好的dom，初始化echarts实例
+            var myChart = echarts.init(document.getElementById('main'));
+
+            // 指定图表的配置项和数据
+            {#console.log({{ all_address|safe }});#}
+            {#console.log({{ all_address_count|safe }});#}
+            var option = {
+                    toolbox: {
+                        show: true,
+                        feature: {
+
+                            saveAsImage: {
+                                show: true,
+                                excludeComponents:
+                                    ['toolbox'],
+                                title:
+                                    "导出",
+                                pixelRatio:
+                                    2
+                            }
+                        }
+                    },
+                    color: ['#3398DB'],
+                    title:
+                        {
+                            text: '水文大断面'
+                        }
+                    ,
+                    tooltip: {}
+                    ,
+                    legend: {
+                        data: ['河底高程(m)'],
+
+                    }
+                    ,
+                    grid: {
+                        left: '10%',
+                        bottom: '25%',
+                        right: '5%'
+                        {#containLabel: true#}
+                    }
+                    ,
+                    xAxis: {
+                        {#show: false,#}
+                        type: 'category',
+                        data: [0, 8.2, 16.9, 759],
+                        axisLabel: {
+                            {#interval: 100000,#}
+                            {#showMinLabel: true,#}
+                            {#showMaxLabel: true,#}
+                            {#rotate:#}
+                            {#    40#}
+                        }
+                        ,
+                        axisTick: {
+                            alignWithLabel: true
+                        }
+                    },
+                    yAxis: {}
+                    ,
+                    {#dataZoom: [#}
+                    {#    {#}
+                    {#        show: true,#}
+                    {#        realtime: true,#}
+                    {#        start: 0,#}
+                    {#        end: 100#}
+                    {#    },#}
+                    {#    {#}
+                    {#        type: 'inside',#}
+                    {#        realtime: true,#}
+                    {#        start: 0,#}
+                    {#        end: 100#}
+                    {#    }#}
+                    {#],#}
+                    series: [
+                        {
+                            name: '河底高程(m)',
+                            type: 'line',
+                            data: [22.59, 22.41, 24.21, 0.43],
+                            itemStyle: {
+                                normal: {
+                                    label: {
+                                        show: true,
+                                        position: [-15, -20],
+
+                                    }
+                                }
+                            },
+                        },
+
+                    ]
+                }
+            ;
+            // 使用刚指定的配置项和数据显示图表。
+            myChart.setOption(option);
+            {#myChart.showLoading();#}
+
+        })
+    </script>
+
+    <script>
+        //执行一个laydate实例
+        laydate.render({
+            elem: '#date_time',
+            type: 'datetime'
+        });
+        laydate.render({
+            elem: '#date_time1',
+            type: 'datetime'
+        });
+    </script>
+{% endblock %}
