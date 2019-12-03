@@ -55,9 +55,9 @@
         <!-- Heading -->
 
         <!-- Nav Item - Pages Collapse Menu -->
-        <li {% if 'dataInfo/deviceDataInfo' in request.path or 'dataInfo/statistical' in request.path or 'dataInfo/locationInfo' in request.path%}class="nav-item active table-active"
+        <li {% if 'station/info' in request.path or 'station/stationAdd' in request.path or 'station/stationModify' in request.path%}class="nav-item active table-active"
             {% else %}class="nav-item"{% endif %}>
-            <a class="nav-link" href="">
+            <a class="nav-link" href="{% url 'station_info' %}">
                 <i class="fas fa-fw fa-house-damage"></i>
                 <span style="font-size: 15px">站点管理</span>
             </a>
@@ -104,11 +104,12 @@
                     <i class="fas fa-fw fa-house-damage"></i>
                     <span style="font-size: 15px">公司管理</span></a>
             </li>
+            <hr class="sidebar-divider">
         {% endif %}
-        <hr class="sidebar-divider">
+
         <li {% if 'users/sysSettings' in request.path %}class="nav-item active table-active"
             {% else %}class="nav-item"{% endif %}>
-            <a class="nav-link" href="">
+            <a class="nav-link" href="{% url 'sys_settings' %}">
                 <i class="fas fa-fw fa-cogs"></i>
                 <span style="font-size: 15px">系统设置</span></a>
         </li>
