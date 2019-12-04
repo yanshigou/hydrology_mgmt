@@ -2,8 +2,9 @@ from django.shortcuts import render
 from django.views import View
 from django.http import HttpResponseRedirect, JsonResponse
 from django.core.urlresolvers import reverse
+from hydrology_mgmt.settings import MEDIA_ROOT
 
-from .models import StationInfo
+from .models import StationInfo, SectionFile
 from .forms import StationInfoForm, StationStatusForm
 from users.models import CompanyModel
 from devices.models import DevicesInfo
@@ -219,6 +220,22 @@ class StationSectionView(LoginRequiredMixin, View):
         try:
             if permission == 'superadmin':
                 station_info = StationInfo.objects.get(id=station_id)
+                station_file = station_info.section.section
+                x_data = list()
+                y_data = list()
+                if station_file:
+                    src = MEDIA_ROOT + "/" + str(station_file)
+                    f = open(src)
+
+                    for i in f:
+                        line = i.split()
+                        if len(line) < 2:
+                            continue
+                        x = line[0]
+                        y = line[1]
+                        x_data.append(x)
+                        y_data.append(y)
+                        # print(x_data, y_data)
                 return render(request, "station_section.html", {
                     "station_info": station_info,
                 })
@@ -226,8 +243,26 @@ class StationSectionView(LoginRequiredMixin, View):
                 try:
                     company_id = request.user.company.id
                     station_info = StationInfo.objects.get(id=station_id, company_id=company_id)
+                    station_file = station_info.section.section
+                    x_data = list()
+                    y_data = list()
+                    if station_file:
+                        src = MEDIA_ROOT + "/" + str(station_file)
+                        f = open(src)
+
+                        for i in f:
+                            line = i.split()
+                            if len(line) < 2:
+                                continue
+                            x = line[0]
+                            y = line[1]
+                            x_data.append(x)
+                            y_data.append(y)
+                            # print(x_data, y_data)
                     return render(request, "station_section.html", {
                         "station_info": station_info,
+                        "x_data": x_data,
+                        "y_data": y_data,
                     })
                 except Exception as e:
                     print(e)
@@ -240,5 +275,25 @@ class StationSectionView(LoginRequiredMixin, View):
                 "msg": str(e)
             })
 
-    def post(self, request):
-        print(request.POST)
+    def post(self, request, station_id):
+        try:
+            time = request.POST.get('time')
+            remarks = request.POST.get('remarks')
+            file = request.FILES
+            section_file = file.get('section')
+            section = SectionFile.objects.create(time=time, section=section_file, remarks=remarks)
+            section_id = section.id
+            station = StationInfo.objects.get(id=station_id)
+            station.section_id = section_id
+            station.save()
+        except SectionFile.DoesNotExist:
+            return JsonResponse({
+                "status": "file",
+                "msg": "上传文件出错"
+            })
+        except StationInfo.DoesNotExist:
+            return JsonResponse({
+                "status": "file",
+                "msg": "没有这个测站点"
+            })
+        return HttpResponseRedirect(reverse('station_section'))
