@@ -1,0 +1,213 @@
+{% extends 'blank.html' %}
+{% load  staticfiles %}
+
+{% block title %}
+    设备管理
+{% endblock %}
+{% block topbar_title %}
+    设备管理
+{% endblock %}
+{% block other_css %}
+    <!-- Custom styles for this page -->
+    <link href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap-select.min.css' %}" rel="stylesheet">
+    <style>
+        option:nth-child(1) {
+            display: none;
+        }
+    </style>
+{% endblock %}
+
+{% block head_scripts %}
+    <script src="{% static 'polyfill.js' %}"></script>
+    <script src="{% static 'cascader.js' %}"></script>
+
+{% endblock %}
+
+{% block page_content %}
+    <div class="container-fluid" style="font-size:14px">
+
+        <!-- Page Heading -->
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'index' %}">主页</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'station_info' %}">测站点管理</a></li>
+            <li class="breadcrumb-item active">设备管理</li>
+        </ol>
+        <div>
+            <a href="{% url 'station_index' station_id %}" style="text-decoration:none">
+                <button class="btn btn-primary">&nbsp;基本信息&nbsp;</button>
+            </a>
+            &nbsp;&nbsp;
+            <a href="{% url 'station_section' station_id %}" style="text-decoration:none">
+                <button class="btn btn-primary">&nbsp;大断面&nbsp;&nbsp;</button>
+            </a>
+            &nbsp;&nbsp;
+            <a href="{% url 'station_devices' station_id %}" style="text-decoration:none">
+                <button class="btn btn-primary">&nbsp;设备管理&nbsp;</button>
+            </a>
+        </div>
+        <p></p>
+        <!-- DataTales Example -->
+        <div class="card shadow mb-4">
+            <div class="alert" style="display: none;"></div>
+            <div class="card-header py-3">
+                {#                <h6 class="m-0 font-weight-bold text-primary">设备详情</h6>#}
+                {% if request.user.permission == "superadmin" or request.user.permission == "admin" %}
+                    <a href="{% url 'station_add' %}">
+                        <button type="button" class="btn btn-sm btn-success">新增设备</button>
+                    </a>
+                {% endif %}
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th>仪器编号</th>
+                            <th>仪器名称</th>
+                            <th>仪器类型</th>
+                            <th>安装方式</th>
+                            <th>发射方向</th>
+                            <th>起点</th>
+                            <th>偏移</th>
+                            <th>高程</th>
+                            <th>仪器状态</th>
+                            <th>经度</th>
+                            <th>纬度</th>
+                            <th>所属站点</th>
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody id="t_body">
+                        {% for device in all_devices %}
+                            <tr>
+                                <td>{{ device.device_id }}</td>
+                                <td>{{ device.name }}</td>
+                                <td>{{ device.device_type }}</td>
+                                <td>{{ device.install_method }}</td>
+                                <td>{{ device.fs_direction }}</td>
+                                <td>{{ device.start_point }}</td>
+                                <td>{{ device.offset }}</td>
+                                <td>{{ device.elevation }}</td>
+                                <td>{{ device.device_status }}</td>
+                                <td>{{ device.longitude }}</td>
+                                <td>{{ device.latitude }}</td>
+                                <td>{{ device.station.station_name }}</td>
+
+                                <td>
+                                    {% if request.user.permission == "superadmin" or request.user.permission == "admin" %}
+                                        <a href="" style="text-decoration:none">
+                                            <button type="button" class="btn btn-warning btn-sm" style="line-height: 1">
+                                                修改
+                                            </button>
+                                        </a>
+                                        {% if device.device_status %}
+                                            <button type="button" class="btn btn-danger btn-sm" style="line-height: 1"
+                                                    onclick="return enable_device({{ device.id }}, false)">暂停使用
+                                            </button>
+                                        {% else %}
+                                            <button type="button" class="btn btn-success btn-sm" style="line-height: 1"
+                                                    onclick="return enable_device({{ device.id }}, true)">开始使用
+                                            </button>
+                                        {% endif %}
+                                        <button type="button" class="btn btn-danger btn-sm"
+                                                onclick="return deviceb({{ device.id }})" style="line-height: 1">删除
+                                        </button>
+                                    {% endif %}
+                                </td>
+
+                            </tr>
+                        {% endfor %}
+
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block other_js %}
+
+    <!-- Page level plugins -->
+    <script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+
+    <!-- Page level custom scripts -->
+    <script src="{% static 'js/demo/datatables-demo.js' %}"></script>
+
+    <script src="{% static 'js/bootstrap-select.min.js' %}"></script>
+    <script src="{% static 'js/defaults-zh_CN.min.js' %}"></script>
+
+    <script>
+        function deviceb(station_id) {
+            var msg = "删除此设备将会无法恢复\n\n您真的确定要删除吗？";
+            if (confirm(msg) === true) {
+                if (station_id === undefined) {
+                    return false
+                }
+                $.ajax({
+                    cache: false,
+                    type: "POST",
+                    dataType: 'json',
+                    url: "{% url 'station_del' %}",
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        "station_id": station_id
+                    },
+                    async: true,
+                    success: function (data) {
+                        if (data.status === 'success') {
+                            alert('删除成功');
+                            location.reload();
+                        } else {
+                            alert(data.msg);
+                            location.reload();
+                        }
+
+                    }
+                });
+                return true;
+            }
+        }
+
+        function enable_device(station_id, is_active) {
+            var msg = "";
+            if (is_active === true) {
+                msg = "你确定要设为有效吗？";
+            } else {
+                msg = "你确定要设为无效吗？";
+            }
+            if (confirm(msg) === true) {
+
+                if (station_id === undefined) {
+                    return false
+                }
+                $.ajax({
+                    cache: false,
+                    type: "POST",
+                    dataType: 'json',
+                    url: "{% url 'station_status' %}",
+                    data: {
+                        csrfmiddlewaretoken: '{{ csrf_token }}',
+                        "id": station_id,
+                        "station_status": is_active
+                    },
+                    async: true,
+                    success: function (data) {
+                        {
+                            alert(data.status);
+                        }
+                        location.reload();
+
+                    }
+                });
+                return true;
+            } else {
+                return false;
+            }
+        }
+    </script>
+{% endblock %}

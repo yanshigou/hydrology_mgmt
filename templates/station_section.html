@@ -13,6 +13,24 @@
             display: none;
         }
     </style>
+    <style type="text/css">
+        input[id="section_text"] {
+            padding: 3px 6px;
+            padding-left: 10px;
+            border: 1px solid #E7EAEC;
+            width: 500px;
+            height: 25px;
+            line-height: 25px;
+            border-left: 3px solid #3FB7EB;
+            background: #FAFAFB;
+            border-radius: 2px;
+        }
+
+        input[type='file'] {
+            border: 0;
+            display: none;
+        }
+    </style>
 {% endblock %}
 {% block head_scripts %}
     <script src="{% static 'polyfill.js' %}"></script>
@@ -27,20 +45,56 @@
             <li class="breadcrumb-item"><a href="{% url 'station_info' %}">测站点管理</a></li>
             <li class="breadcrumb-item active">大断面</li>
         </ol>
-        <div id="main" style="width: auto;height: 600px;"></div>
         <div>
-            <p>
-                <label >实测日期：</label>
-                <input type="text" class="" id="date_time" name="time" value="{{ time }}">
-            </p>
+            <a href="{% url 'station_index' station_info.id %}" style="text-decoration:none">
+                <button class="btn btn-primary">&nbsp;基本信息&nbsp;</button>
+            </a>
+            &nbsp;&nbsp;
+            <a href="{% url 'station_section' station_info.id %}" style="text-decoration:none">
+                <button class="btn btn-primary">&nbsp;大断面&nbsp;&nbsp;</button>
+            </a>
+            &nbsp;&nbsp;
+            <a href="{% url 'station_devices' station_info.id %}" style="text-decoration:none">
+                <button class="btn btn-primary">&nbsp;设备管理&nbsp;</button>
+            </a>
+        </div>
+        <div id="main" style="width: auto;height: 600px;"></div>
+        {#                <div>#}
+        {#                    <form method="post" enctype="multipart/form-data">#}
+        {#                        <input type="hidden" name="station_id" value="{{ station_info.id }}">#}
+        {#                        {{ file_form.as_p }}#}
+        {#                        <input type="submit" value="提交" />#}
+        {#                        {% csrf_token %}#}
+        {#                    </form>#}
+        {##}
+        {#                </div>#}
+        <div>
+                   
+            <form method="post" enctype="multipart/form-data">
+                <p>
+                    {#                    <input type="hidden" name="station_id" value="{{ station_info.id }}"/>#}
+                    <label for="remarks">文件备注：</label>
+                    <input type="text" value="{{ station_info.section.remarks }}" style="width: 200px;" name="remarks">
+                </p>
 
-            <p>
-                <label class="control-label">数据文件：</label>
-                <input name="input-b5" type="file" multiple>
-            </p>
-            <input type="submit" value="绘制"></input>
-{#            <button type="button" class="btn btn-success btn-sm" style="line-height: 1">绘制</button>#}
+                <p>
+                    <label for="date_time">实测时间：</label>
+                    <input type="text" id="date_time" style="width: 200px;" value="{{ station_info.section.time }}"
+                           name="time">
+                </p>
 
+                <p>
+                    <label for="section_text">数据文件：</label>
+                    <input type="text" id="section_text" placeholder="请选择文件···" readonly="readonly"
+                           style="vertical-align: middle;" value="{{ station_info.section.section }}"/>
+                    <input type="file" name="section" id="section"/>
+                </p>
+                <p>
+                    <input type="submit" value="提交"/>
+                </p>
+                {% csrf_token %}
+            </form>
+               
         </div>
     </div>
 
@@ -74,7 +128,7 @@
                             }
                         }
                     },
-                    color: ['#3398DB'],
+                    color: ['#611E03'],
                     title:
                         {
                             text: '水文大断面'
@@ -96,50 +150,58 @@
                     ,
                     xAxis: {
                         {#show: false,#}
+                        boundaryGap: false,
+                        name:'起点距（m）',
+                        nameLocation: "center",
                         type: 'category',
-                        data: [0, 8.2, 16.9, 759],
-                        axisLabel: {
-                            {#interval: 100000,#}
-                            {#showMinLabel: true,#}
-                            {#showMaxLabel: true,#}
-                            {#rotate:#}
-                            {#    40#}
-                        }
+                        nameGap: 40,
+                        nameTextStyle: {
+                          fontSize: 15
+                        },
+                        data: {{ x_data|safe }},
+                        axisLabel: {}
                         ,
                         axisTick: {
                             alignWithLabel: true
                         }
                     },
-                    yAxis: {}
+                    yAxis: {
+                        name:'河底高程（m）',
+                        nameLocation: "center",
+                        type: 'value',
+                        nameGap: 40,
+                        nameTextStyle: {
+                          fontSize: 15
+                        },
+                    }
                     ,
-                    {#dataZoom: [#}
-                    {#    {#}
-                    {#        show: true,#}
-                    {#        realtime: true,#}
-                    {#        start: 0,#}
-                    {#        end: 100#}
-                    {#    },#}
-                    {#    {#}
-                    {#        type: 'inside',#}
-                    {#        realtime: true,#}
-                    {#        start: 0,#}
-                    {#        end: 100#}
-                    {#    }#}
-                    {#],#}
                     series: [
                         {
-                            name: '河底高程(m)',
+                            //name: '河底高程(m)',
                             type: 'line',
-                            data: [22.59, 22.41, 24.21, 0.43],
-                            itemStyle: {
-                                normal: {
-                                    label: {
-                                        show: true,
-                                        position: [-15, -20],
-
-                                    }
-                                }
+                            smooth: true,//平滑曲线
+                            symbol: 'none',  //取消折点圆圈
+                            data: {{ y_data|safe }},
+                            areaStyle: {},
+                            markLine: {
+                                symbol:'none',//去掉箭头
+                                silent: true,
+                                lineStyle: {
+                                    color: '#0077FE',                   // 这儿设置安全基线颜色
+                                    type: "solid",
+                                },
+                                data: [
+                                    {
+                                        name: 'Y 轴值为 100 的水平线',
+                                        yAxis: 20
+                                    },
+                                ],
+                                label: {
+                                    position: 'middle',
+                                    formatter: '水位线'           // 这儿设置安全基线
+                                },
                             },
+
                         },
 
                     ]
@@ -161,6 +223,16 @@
         laydate.render({
             elem: '#date_time1',
             type: 'datetime'
+        });
+    </script>
+    <script type="text/javascript">
+        $(function () {
+            $("#section_text").click(function () {
+                $("input[type='file']").trigger('click');
+            });
+            $("input[type='file']").change(function () {
+                $("#section_text").val($(this).val());
+            });
         });
     </script>
 {% endblock %}
