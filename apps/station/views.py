@@ -9,7 +9,7 @@ from .forms import StationInfoForm, StationStatusForm
 from users.models import CompanyModel
 from devices.models import DevicesInfo
 from myutils.mixin_utils import LoginRequiredMixin
-from myutils.utils import create_history_record
+from myutils.utils import create_history_record, draw_section_image
 
 
 class StationInfoView(LoginRequiredMixin, View):
@@ -220,49 +220,33 @@ class StationSectionView(LoginRequiredMixin, View):
         try:
             if permission == 'superadmin':
                 station_info = StationInfo.objects.get(id=station_id)
-                station_file = station_info.section.section
-                x_data = list()
-                y_data = list()
-                if station_file:
-                    src = MEDIA_ROOT + "/" + str(station_file)
-                    f = open(src)
+                section = station_info.section
+                section_image = ""
+                if section:
+                    station_file = section.section
+                    if station_file:
+                        print(station_file.url)
+                        section_image = station_file.url.split('.')[0] + ".png"
 
-                    for i in f:
-                        line = i.split()
-                        if len(line) < 2:
-                            continue
-                        x = line[0]
-                        y = line[1]
-                        x_data.append(x)
-                        y_data.append(y)
-                        # print(x_data, y_data)
                 return render(request, "station_section.html", {
                     "station_info": station_info,
+                    "section_image": section_image
                 })
             else:
                 try:
                     company_id = request.user.company.id
                     station_info = StationInfo.objects.get(id=station_id, company_id=company_id)
-                    station_file = station_info.section.section
-                    x_data = list()
-                    y_data = list()
-                    if station_file:
-                        src = MEDIA_ROOT + "/" + str(station_file)
-                        f = open(src)
+                    section = station_info.section
+                    section_image = ""
+                    if section:
+                        station_file = section.section
+                        if station_file:
+                            print(station_file.url)
+                            section_image = station_file.url.split('.')[0] + ".png"
 
-                        for i in f:
-                            line = i.split()
-                            if len(line) < 2:
-                                continue
-                            x = line[0]
-                            y = line[1]
-                            x_data.append(x)
-                            y_data.append(y)
-                            # print(x_data, y_data)
                     return render(request, "station_section.html", {
                         "station_info": station_info,
-                        "x_data": x_data,
-                        "y_data": y_data,
+                        "section_image": section_image
                     })
                 except Exception as e:
                     print(e)
@@ -279,21 +263,38 @@ class StationSectionView(LoginRequiredMixin, View):
         try:
             time = request.POST.get('time')
             remarks = request.POST.get('remarks')
+            mark_line = request.POST.get('mark_line')
             file = request.FILES
             section_file = file.get('section')
-            section = SectionFile.objects.create(time=time, section=section_file, remarks=remarks)
+            section = SectionFile.objects.create(time=time, section=section_file, remarks=remarks, mark_line=mark_line)
             section_id = section.id
             station = StationInfo.objects.get(id=station_id)
             station.section_id = section_id
             station.save()
+            file_path = str(section.section)
+            file = MEDIA_ROOT + "/" + file_path
+            file_name = file.split(".")[0] + ".png"
+            if draw_section_image(file, float(mark_line), file_name):
+                print(file_name)
+                # ajax调用会出现权限不足画图错误
+                # return JsonResponse({
+                #     "status": "success",
+                #     "file_name": file_name
+                # })
+                return HttpResponseRedirect(reverse('station_section', args=[str(station_id)]))
         except SectionFile.DoesNotExist:
             return JsonResponse({
-                "status": "file",
+                "status": "fail",
                 "msg": "上传文件出错"
             })
         except StationInfo.DoesNotExist:
             return JsonResponse({
-                "status": "file",
+                "status": "fail",
                 "msg": "没有这个测站点"
             })
-        return HttpResponseRedirect(reverse('station_section'))
+        # ajax调用会出现权限不足画图错误
+        return JsonResponse({
+            "status": "fail",
+            "msg": "画图出错，请检查文件是否正确"
+        })
+
