@@ -10,6 +10,8 @@ import xlsxwriter
 from devices.models import DevicesInfo
 from django.template.context_processors import csrf
 import base64
+import matplotlib as mpl
+import matplotlib.pyplot as plt
 
 
 # 操作记录
@@ -312,3 +314,53 @@ def jpush_function_extra(username, kind, summary, content):
         }
     }
     return requests.post(jpushurl, data=json.dumps(msg), headers=headers)
+
+
+def draw_section_image(section_file, mark_line, save_file):
+    try:
+        y_data = list()
+        x_data = list()
+        with open(section_file) as f:
+            for i in f:
+                line = i.split()
+                if len(line) < 2:
+                    continue
+                x = float(line[0])
+                y = float(line[1])
+                x_data.append(x)
+                y_data.append(y)
+
+        # 设置matplotlib正常显示中文和负号
+        mpl.rcParams['font.sans-serif'] = ['SimHei']  # 用黑体显示中文
+        mpl.rcParams['axes.unicode_minus'] = False  # 正常显示负号
+
+        max_x = max(x_data)
+        min_x = min(x_data)
+        max_y = max(y_data)
+        min_y = min(y_data)
+
+        plt.plot(x_data, y_data, color='brown')  # 先画折线图
+        # plt.fill(x_data, y_data, color="g", alpha=0.3)
+        plt.plot(([min_x, max_y], [max_x, max_y]), color='#1E90FF')
+
+        plt.fill_between(x_data, y_data, mark_line, color='#1E90FF')  # 再画水面，填充颜色
+        # plt.text(max_x / 2 - 120, mark_line + 1, "水位值(m):" + str(mark_line))  # 设置text位置
+
+        plt.fill_between(x_data, min_y, y_data, color='brown')  # 填充折线区域
+
+        plt.xlim(min_x, max_x)  # 构造x轴长度
+        plt.ylim(min_y, max_y + 10)  # 构造y轴高度
+        # 显示横轴标签
+        plt.xlabel("起点距(m)")
+        # 显示纵轴标签
+        plt.ylabel("河底高程(m)")
+        # 显示图标题
+        plt.title("水文大断面")
+        # plt.show()
+        plt.savefig(save_file)
+        return True
+    except Exception as e:
+        import traceback
+        print(traceback.format_exc())
+        print('??', e)
+        return False
