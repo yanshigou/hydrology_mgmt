@@ -79,9 +79,9 @@
         <!-- Heading -->
 
         <!-- Nav Item - Charts -->
-        <li {% if 'devices/deviceModify' in request.path or 'devices/deviceAdd' in request.path or 'devices/deviceStatus' in request.path or "devices/deviceView" in request.path %}class="nav-item active table-active"
+        <li {% if 'dataInfo/ADCPInfo' in request.path or 'devices/deviceAdd' in request.path or 'devices/deviceStatus' in request.path or "devices/deviceView" in request.path %}class="nav-item active table-active"
             {% else %}class="nav-item"{% endif %}>
-            <a class="nav-link" href="">
+            <a class="nav-link" href="{% url 'adcp_data_info' %}">
                 <i class="fas fa-fw fa-database"></i>
                 <span style="font-size: 15px">水量数据</span></a>
         </li>

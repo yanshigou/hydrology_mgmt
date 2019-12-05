@@ -53,7 +53,7 @@
             <div class="card-header py-3">
                 {#                <h6 class="m-0 font-weight-bold text-primary">设备详情</h6>#}
                 {% if request.user.permission == "superadmin" or request.user.permission == "admin" %}
-                    <a href="{% url 'station_add' %}">
+                    <a href="{% url 'device_add' station_id %}">
                         <button type="button" class="btn btn-sm btn-success">新增设备</button>
                     </a>
                 {% endif %}
@@ -70,7 +70,7 @@
                             <th>发射方向</th>
                             <th>起点</th>
                             <th>偏移</th>
-                            <th>高程</th>
+{#                            <th>高程</th>#}
                             <th>仪器状态</th>
                             <th>经度</th>
                             <th>纬度</th>
@@ -88,8 +88,11 @@
                                 <td>{{ device.fs_direction }}</td>
                                 <td>{{ device.start_point }}</td>
                                 <td>{{ device.offset }}</td>
-                                <td>{{ device.elevation }}</td>
-                                <td>{{ device.device_status }}</td>
+{#                                <td>{{ device.elevation }}</td>#}
+                                <td {% if device.device_status %}style="color: green" {% else %}style="color: red"
+                                    {% endif %}>
+                                    {% if device.device_status %}正常使用{% else %}暂停使用{% endif %}
+                                </td>
                                 <td>{{ device.longitude }}</td>
                                 <td>{{ device.latitude }}</td>
                                 <td>{{ device.station.station_name }}</td>
@@ -142,7 +145,7 @@
     <script src="{% static 'js/defaults-zh_CN.min.js' %}"></script>
 
     <script>
-        function deviceb(station_id) {
+        function deviceb1(station_id) {
             var msg = "删除此设备将会无法恢复\n\n您真的确定要删除吗？";
             if (confirm(msg) === true) {
                 if (station_id === undefined) {
@@ -173,7 +176,7 @@
             }
         }
 
-        function enable_device(station_id, is_active) {
+        function enable_device1(station_id, is_active) {
             var msg = "";
             if (is_active === true) {
                 msg = "你确定要设为有效吗？";

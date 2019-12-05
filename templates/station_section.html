@@ -18,7 +18,7 @@
             padding: 3px 6px;
             padding-left: 10px;
             border: 1px solid #E7EAEC;
-            width: 500px;
+            width: 200px;
             height: 25px;
             line-height: 25px;
             border-left: 3px solid #3FB7EB;
@@ -58,23 +58,25 @@
                 <button class="btn btn-primary">&nbsp;设备管理&nbsp;</button>
             </a>
         </div>
-        <div id="main" style="width: auto;height: 600px;"></div>
-        {#                <div>#}
-        {#                    <form method="post" enctype="multipart/form-data">#}
-        {#                        <input type="hidden" name="station_id" value="{{ station_info.id }}">#}
-        {#                        {{ file_form.as_p }}#}
-        {#                        <input type="submit" value="提交" />#}
-        {#                        {% csrf_token %}#}
-        {#                    </form>#}
-        {##}
-        {#                </div>#}
+        <!--<div id="main" style="width: auto;height: 600px;"></div>-->
+        <div>
+            {% if section_image %}
+                <img src="{{ section_image }}" alt="">
+            {% endif %}
+        </div>
         <div>
                    
-            <form method="post" enctype="multipart/form-data">
+            <form method="post" enctype="multipart/form-data" id="imageForm">
                 <p>
                     {#                    <input type="hidden" name="station_id" value="{{ station_info.id }}"/>#}
                     <label for="remarks">文件备注：</label>
                     <input type="text" value="{{ station_info.section.remarks }}" style="width: 200px;" name="remarks">
+                </p>
+
+                <p>
+                    <label for="mark_line">水位高程：</label>
+                    <input type="text" value="{{ station_info.section.mark_line }}" style="width: 200px;"
+                           name="mark_line">
                 </p>
 
                 <p>
@@ -87,14 +89,16 @@
                     <label for="section_text">数据文件：</label>
                     <input type="text" id="section_text" placeholder="请选择文件···" readonly="readonly"
                            style="vertical-align: middle;" value="{{ station_info.section.section }}"/>
-                    <input type="file" name="section" id="section"/>
-                </p>
-                <p>
-                    <input type="submit" value="提交"/>
+                    <input type="file" name="section" id="section" required/>
                 </p>
                 {% csrf_token %}
+                <p>
+                    <button class="btn btn-info" >&nbsp;绘制&nbsp;</button>
+                </p>
             </form>
-               
+{#            <p>#}
+{#                <button class="btn btn-info" id="drawImage">&nbsp;绘制&nbsp;</button>#}
+{#            </p>#}
         </div>
     </div>
 
@@ -105,113 +109,113 @@
     <script src="{% static 'js/bootstrap-select.min.js' %}"></script>
     <script src="{% static 'js/defaults-zh_CN.min.js' %}"></script>
     <script type="text/javascript">
-        $(function () {
-            // 基于准备好的dom，初始化echarts实例
-            var myChart = echarts.init(document.getElementById('main'));
-
-            // 指定图表的配置项和数据
-            {#console.log({{ all_address|safe }});#}
-            {#console.log({{ all_address_count|safe }});#}
-            var option = {
-                    toolbox: {
-                        show: true,
-                        feature: {
-
-                            saveAsImage: {
-                                show: true,
-                                excludeComponents:
-                                    ['toolbox'],
-                                title:
-                                    "导出",
-                                pixelRatio:
-                                    2
-                            }
-                        }
-                    },
-                    color: ['#611E03'],
-                    title:
-                        {
-                            text: '水文大断面'
-                        }
-                    ,
-                    tooltip: {}
-                    ,
-                    legend: {
-                        data: ['河底高程(m)'],
-
-                    }
-                    ,
-                    grid: {
-                        left: '10%',
-                        bottom: '25%',
-                        right: '5%'
-                        {#containLabel: true#}
-                    }
-                    ,
-                    xAxis: {
-                        {#show: false,#}
-                        boundaryGap: false,
-                        name:'起点距（m）',
-                        nameLocation: "center",
-                        type: 'category',
-                        nameGap: 40,
-                        nameTextStyle: {
-                          fontSize: 15
-                        },
-                        data: {{ x_data|safe }},
-                        axisLabel: {}
-                        ,
-                        axisTick: {
-                            alignWithLabel: true
-                        }
-                    },
-                    yAxis: {
-                        name:'河底高程（m）',
-                        nameLocation: "center",
-                        type: 'value',
-                        nameGap: 40,
-                        nameTextStyle: {
-                          fontSize: 15
-                        },
-                    }
-                    ,
-                    series: [
-                        {
-                            //name: '河底高程(m)',
-                            type: 'line',
-                            smooth: true,//平滑曲线
-                            symbol: 'none',  //取消折点圆圈
-                            data: {{ y_data|safe }},
-                            areaStyle: {},
-                            markLine: {
-                                symbol:'none',//去掉箭头
-                                silent: true,
-                                lineStyle: {
-                                    color: '#0077FE',                   // 这儿设置安全基线颜色
-                                    type: "solid",
-                                },
-                                data: [
-                                    {
-                                        name: 'Y 轴值为 100 的水平线',
-                                        yAxis: 20
-                                    },
-                                ],
-                                label: {
-                                    position: 'middle',
-                                    formatter: '水位线'           // 这儿设置安全基线
-                                },
-                            },
-
-                        },
-
-                    ]
-                }
-            ;
-            // 使用刚指定的配置项和数据显示图表。
-            myChart.setOption(option);
-            {#myChart.showLoading();#}
-
-        })
+        //$(function () {
+        //    // 基于准备好的dom，初始化echarts实例
+        //    var myChart = echarts.init(document.getElementById('main'));
+        //
+        //    // 指定图表的配置项和数据
+        //    {#console.log({{ all_address|safe }});#}
+        //    {#console.log({{ all_address_count|safe }});#}
+        //    var option = {
+        //            toolbox: {
+        //                show: true,
+        //                feature: {
+        //
+        //                    saveAsImage: {
+        //                        show: true,
+        //                        excludeComponents:
+        //                            ['toolbox'],
+        //                        title:
+        //                            "导出",
+        //                        pixelRatio:
+        //                            2
+        //                    }
+        //                }
+        //            },
+        //            color: ['#611E03'],
+        //            title:
+        //                {
+        //                    text: '水文大断面'
+        //                }
+        //            ,
+        //            tooltip: {}
+        //            ,
+        //            legend: {
+        //                data: ['河底高程(m)'],
+        //
+        //            }
+        //            ,
+        //            grid: {
+        //                left: '10%',
+        //                bottom: '25%',
+        //                right: '5%'
+        //                {#containLabel: true#}
+        //            }
+        //            ,
+        //            xAxis: {
+        //                {#show: false,#}
+        //                boundaryGap: false,
+        //                name:'起点距（m）',
+        //                nameLocation: "center",
+        //                type: 'category',
+        //                nameGap: 40,
+        //                nameTextStyle: {
+        //                  fontSize: 15
+        //                },
+        //               data: {{ x_data|safe }},
+        //                axisLabel: {}
+        //                ,
+        //                axisTick: {
+        //                    alignWithLabel: true
+        //                }
+        //            },
+        //            yAxis: {
+        //                name:'河底高程（m）',
+        //                nameLocation: "center",
+        //                type: 'value',
+        //                nameGap: 40,
+        //                nameTextStyle: {
+        //                  fontSize: 15
+        //                },
+        //            }
+        //            ,
+        //            series: [
+        //                {
+        //                    //name: '河底高程(m)',
+        //                    type: 'line',
+        //                    smooth: true,//平滑曲线
+        //                    symbol: 'none',  //取消折点圆圈
+        //                    data: {{ y_data|safe }},
+        //                    areaStyle: {},
+        //                    markLine: {
+        //                        symbol:'none',//去掉箭头
+        //                        silent: true,
+        //                        lineStyle: {
+        //                            color: '#0077FE',                   // 这儿设置安全基线颜色
+        //                            type: "solid",
+        //                        },
+        //                        data: [
+        //                            {
+        //                                name: 'Y 轴值为 100 的水平线',
+        //                                yAxis: 20
+        //                            },
+        //                        ],
+        //                        label: {
+        //                            position: 'middle',
+        //                            formatter: '水位线'           // 这儿设置安全基线
+        //                        },
+        //                    },
+        //
+        //                },
+        //
+        //            ]
+        //        }
+        //   ;
+        //    // 使用刚指定的配置项和数据显示图表。
+        //    myChart.setOption(option);
+        //    {#myChart.showLoading();#}
+        //
+        //})
     </script>
 
     <script>
@@ -234,5 +238,23 @@
                 $("#section_text").val($(this).val());
             });
         });
+        $('#drawImage').on('click', function () {
+            $.ajax({
+                cache: false,
+                type: 'post',
+                dataType: 'json',
+                url: "{% url 'station_section' station_info.id %}",
+                data: $("#imageForm").serialize(),
+                async: true,
+                success: function (data) {
+                    if (data.status === "success") {
+                        alert('绘制成功');
+                        window.location.replace("{% url 'station_section' station_info.id %}")
+                    } else {
+                        alert(data.msg)
+                    }
+                }
+            })
+        })
     </script>
 {% endblock %}

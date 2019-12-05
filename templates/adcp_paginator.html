@@ -36,6 +36,22 @@
             margin-right: 0;
         }
     </style>
+    <style>
+        body, td {
+            font-size: 12px !important
+        }
+        th, td {
+            white-space: normal;
+        }
+        thead>tr>th {
+            white-space: nowrap;
+        }
+        .btn {
+            white-space: nowrap;
+            line-height: 1;
+            font-size: 12px !important;
+        }
+    </style>
 {% endblock %}
 
 {% block head_scripts %}
@@ -59,7 +75,22 @@
                 <input type="text" class="" id="date_time1" name="end_time" value="{{ end_time }}">
                 &nbsp;
             </p>
-            <input type="hidden" value="{{ imei_id }}" name="imei_id" id="imei_id">
+            <p>
+                测站点选择：
+                <select name="station_id"  class="address selectpicker" id="station_id">
+                    {% for i in stations %}
+                        <option value="{{ i.id }}">{{ i.station_name }}</option>
+                    {% endfor %}
+                </select>
+                类别选择：
+                <select name="device_id"  class="address selectpicker" id="device_id">
+{#                    {% for i in devices %}#}
+{#                        <option value="{{ i.id }}">{{ i.name }}</option>#}
+{#                    {% endfor %}#}
+                </select>
+                &nbsp;
+
+            </p>
 
             <p></p>
             {% csrf_token %}
@@ -71,14 +102,6 @@
             <a href="" style="text-decoration:none">
                 <button type="button" class="btn btn-primary btn-sm">重置</button>
             </a>
-            {#            <a href="{% url 'track' imei_id start_time end_time %}" target="view_window"#}
-            {#               style="text-decoration:none">#}
-            <button type="button" class="btn btn-success btn-sm" id="track_btn">轨迹回放</button>
-            {#            </a>#}
-            <a>
-                <button type="button" id="exportExcel" class="btn btn-info btn-sm">导出Excel表</button>
-            </a>
-            <button type="button" class="btn btn-info btn-sm" onclick="calculateFlow()">断面流量计算</button>
         </p>
         <div id="div_content">
             <!-- DataTales Example -->
@@ -129,43 +152,7 @@
     </script>
     <script>
         $(function () {
-            $('#exportExcel').click(function () {
-                $('.alert').addClass('alert-success').html('Excle正在导出，请耐心等待').show().delay(1500).fadeOut();
-                $.ajax({
-                    cache: false,
-                    type: "POST",
-                    dataType: 'json',
-                    url: "",
-                    data: $('#filterDataForm').serialize(),
-                    async: true,
-                    success: function (data) {
-                        if (data.status === 'success') {
-                            $('.alert').addClass('alert-success').html('数据导出成功，请点击文件名称进行下载')
-                                .show().delay(1500).fadeOut();
-                        } else {
-                            $('.alert').addClass('alert-success').html('数据导出失败，或没有数据导出').show()
-                                .delay(3000).fadeOut();
-                        }
-                        var href = data.media_url;
-                        var file = data.file;
-                        if (href === undefined) {
-                            href = "#";
-                        }
-                        if (file === undefined) {
-                            file = '没有数据导出'
-                        }
-                        $("#all_button").append(
-                            '<button type="button" class="btn btn-success btn-sm"><a href="' +
-                            href + '">' + file + '</a></button>' + '&nbsp;');
-
-                    }
-                });
-            });
-        })
-    </script>
-    <script>
-        $(function () {
-            reloadDatatables();
+            {#reloadDatatables();#}
             {#total_nums();#}
         });
         var reloadDatatables = function () {
@@ -245,28 +232,64 @@
                 ]
             });
         };
-        $('#track_btn').on('click', function () {
-            var url = '/dataInfo/track/';
-            {#console.log('{% url 'track' imei_id start_time end_time%}');#}
-            url += $('#imei_id').val() + '/';
-            url += $('#date_time0').val() + '/';
-            url += $('#date_time1').val();
-            {#console.log(url);#}
-            window.open(url);
-        })
     </script>
     <script>
-        function calculateFlow() {
-            var div_content = $("#div_content");
-            var url = '/dataInfo/flowTrack/';
-            url += $('#imei_id').val() + '/';
-            url += $('#date_time0').val() + '/';
-            url += $('#date_time1').val();
-            //console.log(url);
-            div_content.html("");
-            div_content.append("<div id=\"container\"><iframe src=\"" + url +"\" width=\"100%\" height=\"750px\" frameborder=\"0\"  style=\"font-size:14px\">\n" +
-                "                 </iframe></div>");
-        }
+        $(function () {
+            var district1 = $('#station_id');
+            var area1 = $("#device_id");
+            // 首先调用一下获取默认站点的设备列表
+            $.ajax({
+                    cache: false,
+                    type: "POST",
+                    dataType: 'json',
+                    url: "{% url 'station_device_select' %}",
+                    data: {
+                        "station_id": $('#station_id option:selected').val(),
+                    },
+                    async: true,
+                    success: function (data) {
+                        var option = '';
+                        for (var i in data.devices) {
+                            if (data.devices.hasOwnProperty(i)) {
+                                var val = data.devices[i]['id'];
+                                var text = data.devices[i]['name'];
+                                console.log(val);
+                                console.log(text);
+                                option = option + '<option value="' + val + '">' + text + '</option>';
+                            }
+                        }
+                        area1.html(option);//给select赋值option,增加可用appendTo()方法
+                        area1.selectpicker("refresh");//必须的,调用此方法以刷新组件
+                    },
+                });
+            district1.change(function () {
+
+                $.ajax({
+                    cache: false,
+                    type: "POST",
+                    dataType: 'json',
+                    url: "{% url 'station_device_select' %}",
+                    data: {
+                        "station_id": $('#station_id option:selected').val(),
+                    },
+                    async: true,
+                    success: function (data) {
+                        var option = '';
+                        for (var i in data.devices) {
+                            if (data.devices.hasOwnProperty(i)) {
+                                var val = data.devices[i]['id'];
+                                var text = data.devices[i]['name'];
+                                console.log(val);
+                                console.log(text);
+                                option = option + '<option value="' + val + '">' + text + '</option>';
+                            }
+                        }
+                        area1.html(option);//给select赋值option,增加可用appendTo()方法
+                        area1.selectpicker("refresh");//必须的,调用此方法以刷新组件
+                    },
+                })
+            });
+        })
     </script>
     <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.13&key=5cda232d2d1f782a634096167304eb59">
     </script>
