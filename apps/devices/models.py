@@ -11,7 +11,11 @@ class DevicesInfo(models.Model):
     fs_direction = models.CharField(max_length=10, verbose_name="发射方向")
     start_point = models.CharField(max_length=20, verbose_name="起点")
     offset = models.CharField(max_length=20, verbose_name="偏移")
-    elevation = models.CharField(max_length=20, verbose_name="高程")
+    # elevation = models.CharField(max_length=20, verbose_name="高程")
     device_status = models.BooleanField(default=True, verbose_name="仪器状态")
     longitude = models.CharField(max_length=30, verbose_name='经度')
     latitude = models.CharField(max_length=30, verbose_name='纬度')
+
+    class Meta:
+        verbose_name = 'ADCP设备信息表'
+        verbose_name_plural = verbose_name
