@@ -1,0 +1,153 @@
+{% extends 'blank.html' %}
+{% load  staticfiles %}
+
+{% block title %}
+设备新增
+{% endblock %}
+{% block topbar_title %}
+设备新增
+{% endblock %}
+
+{% block other_css %}
+<link rel="stylesheet" href="{% static 'css/jquery-editable-select.css' %}">
+<link href="{% static 'css/bootstrap-select.min.css' %}" rel="stylesheet">
+{% endblock %}
+
+{% block head_scripts %}
+<script src="{% static 'polyfill.js' %}"></script>
+<script src="{% static 'cascader.js' %}"></script>
+{% endblock %}
+
+{% block page_content %}
+<div class="container-fluid" style="font-size:14px">
+    <ol class="breadcrumb">
+        <li class="breadcrumb-item"><a href="{% url 'index' %}">主页</a></li>
+        <li class="breadcrumb-item"><a href="{% url 'station_devices' station.id %}">设备管理</a></li>
+        <li class="breadcrumb-item active">设备新增</li>
+    </ol>
+    <!-- Page Heading -->
+    <form class="form-horizontal form-label-left form-control-plaintext" id="station_info_form">
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">站名 *</label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <input type="hidden" value="{{ station.id }}" name="station_id">
+                <input type="text" class="form-control" name="station_name" value="{{ station.station_name }}" disabled>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">仪器编号 *</label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="device_id" value="">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">仪器名称 *</label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="name" value="">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">仪器类型 *</label>
+            <div class="col-md-6 col-sm-6 col-xs-12">
+                <select name="device_type" class="form-control col-md-7 col-xs-12">
+                    <option value="走航式ADCP">走航式ADCP</option>
+                    <option value="水平ADCP">水平ADCP</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">安装方式 *</label>
+            <div class="col-md-6 col-sm-6 col-xs-12">
+                <select name="install_method" class="form-control col-md-7 col-xs-12">
+                    <option value="浮动">浮动</option>
+                    <option value="固定">固定</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">发射方向 *</label>
+            <div class="col-md-6 col-sm-6 col-xs-12">
+                <select name="fs_direction" class="form-control col-md-7 col-xs-12">
+                    <option value="向上">向上</option>
+                    <option value="向下">向下</option>
+                    <option value="向左">向左</option>
+                    <option value="固右">固右</option>
+                </select>
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">起点 *</label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="start_point" value="">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">偏移 *</label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="offset" value="">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">经度 *</label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="longitude" value="">
+            </div>
+        </div>
+
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">纬度 *</label>
+            <div class="col-md-5 col-sm-5 col-xs-12">
+                <input type="text" class="form-control" name="latitude" value="">
+            </div>
+        </div>
+
+        <div class="ln_solid"></div>
+        <div class="form-group">
+            <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                <button type="button" id="station_info_button" class="btn btn-primary">确定</button>
+            </div>
+        </div>
+        {% csrf_token %}
+    </form>
+</div>
+{% endblock %}
+
+{% block other_js %}
+<script src="{% static 'js/jquery-editable-select.js' %}"></script>
+<script src="{% static 'laydate/laydate.js' %}"></script>
+<script src="{% static 'js/bootstrap-select.min.js' %}"></script>
+<script>
+    $('#basic').editableSelect({
+        filter: false
+    });
+</script>
+<script>
+    $('#station_info_button').on('click', function () {
+        $.ajax({
+            cache: false,
+            type: 'post',
+            dataType: 'json',
+            url: "{% url 'device_add' station.id %}",
+            data: $("#station_info_form").serialize(),
+            async: true,
+            success: function (data) {
+                if (data.status === "success") {
+                    alert('新增成功');
+                    window.location.replace("{% url 'station_info' %}")
+                } else {
+                    alert(data.errors)
+                }
+            }
+        })
+    })
+</script>
+{% endblock %}
