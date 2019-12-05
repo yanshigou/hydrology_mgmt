@@ -1,0 +1,274 @@
+{% extends 'blank.html' %}
+{% load  staticfiles %}
+
+{% block title %}
+    水量数据查询
+{% endblock %}
+{% block topbar_title %}
+    水量数据查询
+{% endblock %}
+{% block other_css %}
+    <!-- Custom styles for this page -->
+    <link href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap-select.min.css' %}" rel="stylesheet">
+    <style>
+        option:nth-child(1) {
+            display: none;
+        }
+    </style>
+    <style>
+        html, body, #container {
+            height: 100%;
+            width: 100%;
+        }
+
+        .input-card .btn {
+            margin-right: 1.2rem;
+            width: 9rem;
+        }
+
+        .input-card .btn-sm {
+            margin-right: 1.2rem;
+            width: 3.5rem;
+        }
+
+        .input-card .btn:last-child {
+            margin-right: 0;
+        }
+    </style>
+{% endblock %}
+
+{% block head_scripts %}
+    <script src="{% static 'polyfill.js' %}"></script>
+    <script src="{% static 'cascader.js' %}"></script>
+
+{% endblock %}
+
+{% block page_content %}
+    <div class="container-fluid" style="font-size:13px">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'index' %}">主页</a></li>
+            <li class="breadcrumb-item active">水量数据</li>
+        </ol>
+        <!-- Page Heading -->
+        <form action="" method="post" id="filterDataForm">
+            <p>
+                日期选项：
+                <input type="text" class="" id="date_time0" name="start_time" value="{{ start_time }}">
+                &nbsp;至 &nbsp;
+                <input type="text" class="" id="date_time1" name="end_time" value="{{ end_time }}">
+                &nbsp;
+            </p>
+            <input type="hidden" value="{{ imei_id }}" name="imei_id" id="imei_id">
+
+            <p></p>
+            {% csrf_token %}
+        </form>
+        <p id="all_button">
+            <a>
+                <button type="submit" class="btn btn-primary btn-sm" onclick="reloadDatatables()">查询</button>
+            </a>
+            <a href="" style="text-decoration:none">
+                <button type="button" class="btn btn-primary btn-sm">重置</button>
+            </a>
+            {#            <a href="{% url 'track' imei_id start_time end_time %}" target="view_window"#}
+            {#               style="text-decoration:none">#}
+            <button type="button" class="btn btn-success btn-sm" id="track_btn">轨迹回放</button>
+            {#            </a>#}
+            <a>
+                <button type="button" id="exportExcel" class="btn btn-info btn-sm">导出Excel表</button>
+            </a>
+            <button type="button" class="btn btn-info btn-sm" onclick="calculateFlow()">断面流量计算</button>
+        </p>
+        <div id="div_content">
+            <!-- DataTales Example -->
+            <div class="card shadow mb-4">
+                <div class="alert" style="display: none;"></div>
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary"></h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                            <thead class="thead-dark">
+                            <tr>
+                                <th>时间</th>
+                                <th>平均流速(m/s)</th>
+                                <th>平均流向(°)</th>
+                                <th>水位(m)</th>
+                            </tr>
+                            </thead>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block other_js %}
+
+    <!-- Page level plugins -->
+    <script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+    <script src="{% static 'laydate/laydate.js' %}"></script>
+    <!-- Page level custom scripts -->
+    <script src="{% static 'js/demo/datatables-demo.js' %}"></script>
+    <script src="{% static 'js/bootstrap-select.min.js' %}"></script>
+    <script src="{% static 'js/defaults-zh_CN.min.js' %}"></script>
+    <script>
+        //执行一个laydate实例
+        laydate.render({
+            elem: '#date_time0',
+            type: 'datetime'
+        });
+        laydate.render({
+            elem: '#date_time1',
+            type: 'datetime'
+        });
+    </script>
+    <script>
+        $(function () {
+            $('#exportExcel').click(function () {
+                $('.alert').addClass('alert-success').html('Excle正在导出，请耐心等待').show().delay(1500).fadeOut();
+                $.ajax({
+                    cache: false,
+                    type: "POST",
+                    dataType: 'json',
+                    url: "",
+                    data: $('#filterDataForm').serialize(),
+                    async: true,
+                    success: function (data) {
+                        if (data.status === 'success') {
+                            $('.alert').addClass('alert-success').html('数据导出成功，请点击文件名称进行下载')
+                                .show().delay(1500).fadeOut();
+                        } else {
+                            $('.alert').addClass('alert-success').html('数据导出失败，或没有数据导出').show()
+                                .delay(3000).fadeOut();
+                        }
+                        var href = data.media_url;
+                        var file = data.file;
+                        if (href === undefined) {
+                            href = "#";
+                        }
+                        if (file === undefined) {
+                            file = '没有数据导出'
+                        }
+                        $("#all_button").append(
+                            '<button type="button" class="btn btn-success btn-sm"><a href="' +
+                            href + '">' + file + '</a></button>' + '&nbsp;');
+
+                    }
+                });
+            });
+        })
+    </script>
+    <script>
+        $(function () {
+            reloadDatatables();
+            {#total_nums();#}
+        });
+        var reloadDatatables = function () {
+            {#console.log('触发了');#}
+            var tables = $('#dataTable').DataTable({
+                select: 'single',
+                destroy: true,
+                'bAutoWidth': false,
+                "pagingType": "full_numbers",
+                "language": {
+                    "decimal": "",
+                    "info": "显示 _START_ 条 至 _END_ 条 共 _TOTAL_ 条数据",
+                    "infoEmpty": "没有数据",
+                    "emptyTable": "没有数据",
+                    "infoFiltered": "(从总数 _MAX_ 条中 过滤)",
+                    "infoPostFix": "",
+                    "thousands": ",",
+                    "lengthMenu": "每页显示 _MENU_ 条数据",
+                    "loadingRecords": "加载中...",
+                    "processing": "处理中...",
+                    "search": "搜索:",
+                    "zeroRecords": "没有搜索到数据",
+                    "paginate": {
+                        "first": "第一页",
+                        "last": "最后一页",
+                        "next": "下一页",
+                        "previous": "上一页"
+                    },
+                    "aria": {
+                        "sortAscending": ": 点击以按升序排序",
+                        "sortDescending": ": 点击以按降序排序"
+                    }
+                },
+                "autoWidth": false,	//禁用自动调整列宽
+                "processing": true,//载入数据的时候是否显示“载入中”
+                "aLengthMenu": [[100, 50, 25, 10], [100, 50, 25, 10]],//设置每页显示数据条数的下拉选项
+                'iDisplayLength': 100, //每页初始显示5条记录
+                "searching": false,//去掉搜索框
+                "deferRender": true,
+                "ordering": false,
+                "serverSide": true, //开启服务器模式
+                "ajax": function (data, callback) {
+                    {#console.log(data.order);#}
+                    var dataStr = $("#filterDataForm").serialize() + "&draw=" + data.draw + "&start=" + data.start + "&length=" + data.length + "&page=" + (data.start / data.length + 1);
+                    $.ajax({
+                        cache: false,
+                        type: "POST",
+                        dataType: 'json',
+                        url: "",
+                        data: dataStr,
+                        async: true,
+                        success: function (res) {
+                            {#console.log(res);#}
+                            var returnData = {};
+                            returnData.draw = res.draw; // 计数器
+                            returnData.recordsTotal = res.recordsTotal;//返回数据全部记录
+                            returnData.recordsFiltered = res.recordsFiltered;//过滤后记录
+                            returnData.data = res.data; // 数据对象
+                            {#console.log(returnData.data);#}
+                            callback(returnData);
+                        },
+                        error: function () {
+                            alert('错误');
+                        }
+                    })
+                },
+                columns: [
+                    {data: "imei"},
+                    {data: "data_time"},
+                    {data: "lon_lat"},
+                    {data: "speed"},
+                    {data: "direction"},
+                    {data: "accuracy"},
+                    {data: "altitude"},
+                    {data: "power"},
+                    {data: "satellites"},
+                ]
+            });
+        };
+        $('#track_btn').on('click', function () {
+            var url = '/dataInfo/track/';
+            {#console.log('{% url 'track' imei_id start_time end_time%}');#}
+            url += $('#imei_id').val() + '/';
+            url += $('#date_time0').val() + '/';
+            url += $('#date_time1').val();
+            {#console.log(url);#}
+            window.open(url);
+        })
+    </script>
+    <script>
+        function calculateFlow() {
+            var div_content = $("#div_content");
+            var url = '/dataInfo/flowTrack/';
+            url += $('#imei_id').val() + '/';
+            url += $('#date_time0').val() + '/';
+            url += $('#date_time1').val();
+            //console.log(url);
+            div_content.html("");
+            div_content.append("<div id=\"container\"><iframe src=\"" + url +"\" width=\"100%\" height=\"750px\" frameborder=\"0\"  style=\"font-size:14px\">\n" +
+                "                 </iframe></div>");
+        }
+    </script>
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.13&key=5cda232d2d1f782a634096167304eb59">
+    </script>
+    <script src="//webapi.amap.com/ui/1.0/main.js?v=1.0.11"></script>
+{% endblock %}
