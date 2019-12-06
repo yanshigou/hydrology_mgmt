@@ -83,15 +83,19 @@ class Message(models.Model):
         verbose_name_plural = verbose_name
 
 
+from station.models import StationInfo
+
+
 class SystemSettings(models.Model):
     # TODO 理论上系统设置是绑定站点
-    water_min_level = models.CharField(max_length=10, verbose_name="水位坐标最小值")
-    water_max_level = models.CharField(max_length=10, verbose_name="水位坐标最大值")
-    flow_min_level = models.CharField(max_length=10, verbose_name="流量坐标最小值")
-    flow_max_level = models.CharField(max_length=10, verbose_name="流量坐标最大值")
-    deviate_value = models.CharField(max_length=10, verbose_name="偏离报警阈值")
-    volt_value = models.CharField(max_length=10, verbose_name="电压报警阈值")
+    water_min_level = models.CharField(max_length=10, verbose_name="水位坐标最小值（m）")
+    water_max_level = models.CharField(max_length=10, verbose_name="水位坐标最大值（m）")
+    flow_min_level = models.CharField(max_length=10, verbose_name="流量坐标最小值（m³/s）")
+    flow_max_level = models.CharField(max_length=10, verbose_name="流量坐标最大值（m³/s）")
+    deviate_value = models.CharField(max_length=10, verbose_name="偏离报警阈值（m）")
+    volt_value = models.CharField(max_length=10, verbose_name="电压报警阈值（V）")
     is_alarm = models.BooleanField(default=True, verbose_name="是否报警")
+    station = models.ForeignKey(StationInfo, verbose_name="测站点")
 
     class Meta:
         verbose_name = '系统设置'

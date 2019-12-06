@@ -12,6 +12,8 @@ from myutils.mixin_utils import LoginRequiredMixin
 from myutils.utils import create_history_record, make_message, jpush_function_extra
 from django.core.urlresolvers import reverse
 from devices.models import DevicesInfo
+from station.models import StationInfo
+
 DEFAULT_PASSWORD = "123456"
 
 
@@ -840,6 +842,7 @@ class CompanyApiView(APIView):
     共用公司管理等
     仅超级管理员
     """
+
     def get(self, request):
         try:
             username = request.META.get("HTTP_USERNAME")
@@ -1026,15 +1029,62 @@ class MessageApiView(APIView):
             })
 
 
+class SystemStationView(LoginRequiredMixin, View):
+    def get(self, request):
+        permission = request.user.permission
+        print(permission)
+        if permission == 'superadmin':
+            all_station = StationInfo.objects.all()
+        else:
+            try:
+                company = request.user.company.company_name
+                # print(company)
+            except Exception as e:
+                print(e)
+                return HttpResponseRedirect(reverse('index'))
+            if company:
+                all_station = StationInfo.objects.filter(company__company_name=company)
+            else:
+                all_station = ""
+        create_history_record(request.user, '查询所有测站点')
+        return render(request, 'sys_station.html', {
+            "all_station": all_station,
+        })
+
+
 # TODO 目前为全局设置，以后会绑定到站点上
 class SystemSettingsView(LoginRequiredMixin, View):
-    def get(self, request):
-        sys_settings = SystemSettings.objects.all()
-        if sys_settings:
-            sys_settings = sys_settings[0]
-        return render(request, 'sys_settings.html', {"sys_settings": sys_settings})
+    def get(self, request, station_id):
+        permission = request.user.permission
+        print(permission)
+        if permission == 'superadmin':
+            try:
+                sys_settings = SystemSettings.objects.get(station_id=station_id)
+            except SystemSettings.DoesNotExist:
+                sys_settings = SystemSettings.objects.create(station_id=station_id, water_min_level=0,
+                                                             water_max_level=0, flow_min_level=0, flow_max_level=0,
+                                                             deviate_value=0, volt_value=0, is_alarm=0)
+                return render(request, 'sys_settings.html', {"sys_settings": sys_settings})
+            return render(request, 'sys_settings.html', {"sys_settings": sys_settings})
+        else:
+            try:
+                company = request.user.company.company_name
+            except Exception as e:
+                print(e)
+                return HttpResponseRedirect(reverse('sys_station'))
+            if company and StationInfo.objects.filter(id=station_id, company__company_name=company):
+                try:
+                    sys_settings = SystemSettings.objects.get(station_id=station_id,
+                                                              station__company__company_name=company)
+                except SystemSettings.DoesNotExist:
+                    sys_settings = SystemSettings.objects.create(station_id=station_id, water_min_level=0,
+                                                                 water_max_level=0, flow_min_level=0, flow_max_level=0,
+                                                                 deviate_value=0, volt_value=0, is_alarm=0)
+                return render(request, 'sys_settings.html', {"sys_settings": sys_settings})
+            else:
+                return HttpResponseRedirect(reverse('sys_station'))
 
-    def post(self, request):
+    def post(self, request, station_id):
         sys_id = request.POST.get('sys_id')
         print(sys_id)
         if sys_id:

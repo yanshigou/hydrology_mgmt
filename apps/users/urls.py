@@ -6,7 +6,7 @@ from .views import LoginView, LogoutView, UserInfoView, ChangePassword, UploadIm
 from .views import AllUsersView, ChangePermissionView, DelUserView, HistoryRecordView, AllHistoryRecordView
 from .views import RegisterView2, ResetPasswordView, MessageView, AppLoginView, ChangePasswordApiView, LogoutApiView, \
     CompanyAddView, CompanyView, DelCompanView, LoginApiView, ResetPasswordApiView, UserInfoApiView, CompanyApiView, \
-    MessageApiView, SystemSettingsView
+    MessageApiView, SystemSettingsView, SystemStationView
 
 urlpatterns = [
     url(r'^register/$', RegisterView2.as_view(), name='register'),
@@ -36,5 +36,6 @@ urlpatterns = [
     url(r'^messageApi/$', MessageApiView.as_view()),
 
 
-    url(r'^sysSettings/$', SystemSettingsView.as_view(), name='sys_settings'),
+    url(r'^sysStation/$', SystemStationView.as_view(), name='sys_station'),
+    url(r'^sysSettings/(?P<station_id>\d+)/$', SystemSettingsView.as_view(), name='sys_settings'),
 ]
