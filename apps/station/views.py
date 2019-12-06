@@ -53,16 +53,23 @@ class StationAddView(LoginRequiredMixin, View):
 
     def post(self, request):
         # print(request.POST)
-        station_form = StationInfoForm(request.POST)
-        if station_form.is_valid():
-            station_form.save()
-            return JsonResponse({"status": "success"})
+        try:
+            station_form = StationInfoForm(request.POST)
+            if station_form.is_valid():
+                station_form.save()
+                create_history_record(request.user, '新增测站点 %s %s' % (request.POST.get('station_code'), request.POST.get('station_name')))
+                return JsonResponse({"status": "success"})
 
-        print(station_form.errors)
-        return JsonResponse({
-            "status": "fail",
-            "errors": "所有信息均为必填"
-        })
+            errors = dict(station_form.errors.items())
+            return JsonResponse({
+                "status": "fail",
+                "errors": errors
+            })
+        except Exception as e:
+            return JsonResponse({
+                "status": "fail",
+                "msg": str(e)
+            })
 
 
 class StationModifyView(LoginRequiredMixin, View):
