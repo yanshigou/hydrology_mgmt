@@ -2,7 +2,7 @@
 __author__ = "dzt"
 __date__ = "2019/12/3"
 from django.conf.urls import url
-from .views import StationInfoView, StationAddView, StationModifyView, StationDelView, StationStatusView, StationIndexView, StationSectionView
+from .views import StationInfoView, StationAddView, StationModifyView, StationDelView, StationStatusView, StationIndexView, StationSectionView, ShowMapView
 
 
 urlpatterns = [
@@ -14,4 +14,5 @@ urlpatterns = [
 
     url(r'^stationIndex/(?P<station_id>\d+)/$', StationIndexView.as_view(), name='station_index'),
     url(r'^stationSection/(?P<station_id>\d+)/$', StationSectionView.as_view(), name='station_section'),
+    url(r'^map/$', ShowMapView.as_view(), name='show_map'),
 ]

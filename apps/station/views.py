@@ -24,7 +24,7 @@ class StationInfoView(LoginRequiredMixin, View):
                 # print(company)
             except Exception as e:
                 print(e)
-                return HttpResponseRedirect(reverse('devices_info'))
+                return HttpResponseRedirect(reverse('index'))
             if company:
                 all_station = StationInfo.objects.filter(company__company_name=company)
             else:
@@ -305,3 +305,29 @@ class StationSectionView(LoginRequiredMixin, View):
             "msg": "画图出错，请检查文件是否正确"
         })
 
+
+class ShowMapView(View):
+    def get(self, request):
+        return render(request, "map.html")
+
+    def post(self, request):
+        permission = request.user.permission
+        if permission == 'superadmin':
+            all_station = StationInfo.objects.filter(station_status=True)
+        else:
+            try:
+                company = request.user.company.company_name
+            except Exception as e:
+                print(e)
+                return JsonResponse({"status": "fail"})
+            if company:
+                all_station = StationInfo.objects.filter(company__company_name=company, station_status=True)
+            else:
+                all_station = []
+        a = ""
+        print(all_station)
+        for station in all_station:
+
+            a += str(station.longitude) + ',' + str(station.latitude) + ',' + str(station.station_name) + '\n'
+
+        return JsonResponse({"status": "success", "str_data": a})
