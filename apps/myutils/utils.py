@@ -331,7 +331,7 @@ def draw_section_image(section_file, mark_line, save_file):
                 y_data.append(y)
 
         # 设置matplotlib正常显示中文和负号
-        mpl.rcParams['font.sans-serif'] = ['SimHei']  # 用黑体显示中文
+        mpl.rcParams['font.sans-serif'] = ['WenQuanYi Zen Hei']  # 用黑体显示中文 ubuntu无字体库
         mpl.rcParams['axes.unicode_minus'] = False  # 正常显示负号
 
         max_x = max(x_data)
