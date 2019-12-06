@@ -22,7 +22,17 @@ class ADCPLevelDataInfo(models.Model):
     level = models.CharField(max_length=10, verbose_name="水位", null=True, blank=True)
     power = models.CharField(max_length=10, verbose_name="电压", null=True, blank=True)
 
+    class Meta:
+        verbose_name = 'ADCP水位信息表'
+        verbose_name_plural = verbose_name
+
 
 class SectionDataInfo(models.Model):
     station = models.ForeignKey(StationInfo, verbose_name="测站点")
     time = models.DateTimeField(verbose_name="时间")
+    distance = models.CharField(max_length=10, verbose_name="距离")
+    elevation = models.CharField(max_length=10, verbose_name="高程")
+
+    class Meta:
+        verbose_name = '大断面信息表'
+        verbose_name_plural = verbose_name

@@ -3,7 +3,7 @@ from django.views import View
 from django.http import HttpResponseRedirect, JsonResponse
 from django.core.urlresolvers import reverse
 
-from .models import ADCPDataInfo
+from .models import ADCPDataInfo, ADCPLevelDataInfo
 from devices.models import DevicesInfo
 from station.models import StationInfo
 from myutils.mixin_utils import LoginRequiredMixin
@@ -69,16 +69,78 @@ class ADCPDataInfoView(LoginRequiredMixin, View):
             data_page = paginator.page(paginator.num_pages)
         print(data_page)
         data = []
-        # for i in data_page:
-        #     # TODO 每个时间点多条数据，需计算平均值
-        #     print(i.time)
-        #     print(i.speed)
-        #     print(i.direction)
-        #     # data.append({
-        #     # })
+        for i in data_page:
+            # TODO 每个时间点多条数据，需计算平均值
+            time = i.time
+            if time:
+                time = datetime.strftime(time, "%Y-%m-%d %H:%M:%S")
+            data.append({
+                "time": time,
+                "speed": i.speed,
+                "direction": i.direction,
+                "level": ""
+            })
         return JsonResponse({
             "draw": draw,
             "recordsTotal": data_infos.count(),
             "recordsFiltered": data_infos.count(),
             "data": data
+        })
+
+
+class DataInfoStationView(LoginRequiredMixin, View):
+    def get(self, request):
+        permission = request.user.permission
+        print(permission)
+        if permission == 'superadmin':
+            all_station = StationInfo.objects.filter(station_status=True)
+        else:
+            try:
+                company = request.user.company.company_name
+                # print(company)
+            except Exception as e:
+                print(e)
+                return HttpResponseRedirect(reverse('index'))
+            if company:
+                all_station = StationInfo.objects.filter(station_status=True, company__company_name=company)
+            else:
+                all_station = ""
+        create_history_record(request.user, '流量信息查询所有测站点')
+        return render(request, 'datainfo_station.html', {
+            "all_station": all_station,
+        })
+
+
+class DataInfoView(LoginRequiredMixin, View):
+    """
+    流量信息展示，汇总各种表数据
+    """
+    def get(self, request, station_id):
+        permission = request.user.permission
+        print(permission)
+        if permission == 'superadmin':
+            devices = DevicesInfo.objects.all()
+        else:
+            company_id = request.user.company.id
+            devices = DevicesInfo.objects.filter(station__company_id=company_id, station_id=station_id)
+        data_info = list()
+        for device in devices:
+            data_dict = dict()
+            adcp_data_info = ADCPDataInfo.objects.filter(device_id=device.id).last()
+            adcp_level_data_info = ADCPLevelDataInfo.objects.filter(device_id=device.id).last()
+            data_dict['device'] = device.name
+            if adcp_data_info:
+                data_dict['time'] = datetime.strftime(adcp_data_info.time, "%Y-%m-%d %H:%M:%S")
+                data_dict['speed'] = adcp_data_info.speed
+                data_dict['direction'] = adcp_data_info.direction
+                data_dict['depth'] = adcp_data_info.depth
+                data_dict['distance'] = adcp_data_info.distance
+            if adcp_level_data_info:
+                data_dict['level'] = adcp_level_data_info.level
+                data_dict['power'] = adcp_level_data_info.power
+            print(data_dict)
+            data_info.append(data_dict)
+        print(data_info)
+        return render(request, 'data_info.html', {
+            # "data_info": data_info,
         })
