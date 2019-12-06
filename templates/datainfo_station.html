@@ -1,0 +1,108 @@
+{% extends 'blank.html' %}
+{% load  staticfiles %}
+
+{% block title %}
+    流量信息
+{% endblock %}
+{% block topbar_title %}
+    流量信息
+{% endblock %}
+{% block other_css %}
+    <!-- Custom styles for this page -->
+    <link href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap-select.min.css' %}" rel="stylesheet">
+    <style>
+        option:nth-child(1) {
+            display: none;
+        }
+    </style>
+{% endblock %}
+
+{% block head_scripts %}
+    <script src="{% static 'polyfill.js' %}"></script>
+    <script src="{% static 'cascader.js' %}"></script>
+
+{% endblock %}
+
+{% block page_content %}
+    <div class="container-fluid" style="font-size:14px">
+
+        <!-- Page Heading -->
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'index' %}">主页</a></li>
+            <li class="breadcrumb-item active">流量信息</li>
+        </ol>
+
+        <!-- DataTales Example -->
+        <div class="card shadow mb-4">
+            <div class="alert" style="display: none;"></div>
+            <div class="card-header py-3">
+            </div>
+            <div class="card-body">
+                <div class="table-responsive">
+                    <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                        <thead class="thead-dark">
+                        <tr>
+                            <th>站名</th>
+                            <th>站码</th>
+                            <th>河流</th>
+                            <th>经度</th>
+                            <th>纬度</th>
+                            <th>状态</th>
+                            {% if request.user.permission == "superadmin" %}
+                                <th>所属公司</th>
+                            {% endif %}
+                            <th>操作</th>
+                        </tr>
+                        </thead>
+                        <tbody id="t_body">
+                        {% for station in all_station %}
+                            <tr>
+                                <td>{{ station.station_name }}</td>
+                                <td>{{ station.station_code }}</td>
+                                <td>{{ station.river }}</td>
+                                <td>{{ station.longitude }}</td>
+                                <td>{{ station.latitude }}</td>
+                                <td {% if station.station_status %}style="color: green" {% else %}style="color: red"
+                                    {% endif %}>
+                                    {% if station.station_status %}有效{% else %}无效{% endif %}
+                                </td>
+                                {% if request.user.permission == "superadmin" %}
+                                    <td>{{ station.company.company_name }}</td>
+                                {% endif %}
+
+                                <td>
+                                    {% if request.user.permission == "superadmin" or request.user.permission == "admin" %}
+                                        <a href="{% url 'data_info' station.id %}" style="text-decoration:none">
+                                            <button type="button" class="btn btn-success btn-sm" style="line-height: 1">
+                                                查看
+                                            </button>
+                                        </a>
+                                    {% endif %}
+                                </td>
+
+                            </tr>
+                        {% endfor %}
+
+
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </div>
+
+    </div>
+{% endblock %}
+
+{% block other_js %}
+
+    <!-- Page level plugins -->
+    <script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+
+    <!-- Page level custom scripts -->
+    <script src="{% static 'js/demo/datatables-demo.js' %}"></script>
+
+    <script src="{% static 'js/bootstrap-select.min.js' %}"></script>
+    <script src="{% static 'js/defaults-zh_CN.min.js' %}"></script>
+{% endblock %}
