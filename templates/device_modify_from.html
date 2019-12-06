@@ -1,0 +1,192 @@
+{% extends 'blank.html' %}
+{% load  staticfiles %}
+
+{% block title %}
+    设备修改
+{% endblock %}
+{% block topbar_title %}
+    设备修改
+{% endblock %}
+{% block other_css %}
+    <link rel="stylesheet" href="{% static 'css/jquery-editable-select.css' %}">
+    <link href="{% static 'css/bootstrap-select.min.css' %}" rel="stylesheet">
+    <style>
+        option:nth-child(1) {
+            display: none;
+        }
+    </style>
+{% endblock %}
+
+{% block head_scripts %}
+    <script src="{% static 'polyfill.js' %}"></script>
+    <script src="{% static 'cascader.js' %}"></script>
+{% endblock %}
+
+{% block page_content %}
+    <div class="container-fluid" style="font-size:14px">
+
+        <!-- Page Heading -->
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'index' %}">主页</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'station_devices' station_id %}">设备管理</a></li>
+            <li class="breadcrumb-item active">修改设备</li>
+        </ol>
+        <form class="form-horizontal form-label-left form-control-plaintext" id="device_info_form">
+
+            <div class="form-group">
+                <label class="control-label col-md-3 col-sm-3 col-xs-12">仪器编号 *</label>
+                <div class="col-md-5 col-sm-5 col-xs-12">
+                    <input type="text" class="form-control" name="device_id" value="{{ device_info.device_id }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-md-3 col-sm-3 col-xs-12">仪器名称 *</label>
+                <div class="col-md-5 col-sm-5 col-xs-12">
+                    <input type="text" class="form-control" name="name" value="{{ device_info.name }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-md-3 col-sm-3 col-xs-12">仪器类型 *</label>
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                    <select name="device_type" class="form-control col-md-7 col-xs-12">
+                        {% if device_info.device_type == "走航式ADCP" %}
+                            <option value="走航式ADCP" selected>走航式ADCP</option>
+                        {% elif device_info.device_type == "水平ADCP" %}
+                            <option value="水平ADCP" selected>水平ADCP</option>
+                        {% endif %}
+                        <option value="走航式ADCP">走航式ADCP</option>
+                        <option value="水平ADCP">水平ADCP</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-md-3 col-sm-3 col-xs-12">安装方式 *</label>
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                    <select name="install_method" class="form-control col-md-7 col-xs-12">
+                        {% if device_info.install_method == "浮动" %}
+                            <option value="浮动" selected>浮动</option>
+                        {% elif device_info.install_method == "固定" %}
+                            <option value="固定" selected>固定</option>
+                        {% endif %}
+                        <option value="浮动">浮动</option>
+                        <option value="固定">固定</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-md-3 col-sm-3 col-xs-12">发射方向 *</label>
+                <div class="col-md-6 col-sm-6 col-xs-12">
+                    <select name="fs_direction" class="form-control col-md-7 col-xs-12">
+                        {% if device_info.fs_direction == "向上" %}
+                            <option value="向上" selected>向上</option>
+                        {% elif device_info.fs_direction == "向下" %}
+                            <option value="向下" selected>向下</option>
+                        {% elif device_info.fs_direction == "向左" %}
+                            <option value="向左" selected>向左</option>
+                        {% elif device_info.fs_direction == "向右" %}
+                            <option value="固右" selected>固右</option>
+                        {% endif %}
+                        <option value="向上">向上</option>
+                        <option value="向下">向下</option>
+                        <option value="向左">向左</option>
+                        <option value="固右">固右</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-md-3 col-sm-3 col-xs-12">起点 *</label>
+                <div class="col-md-5 col-sm-5 col-xs-12">
+                    <input type="text" class="form-control" name="start_point" value="{{ device_info.start_point }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-md-3 col-sm-3 col-xs-12">偏移 *</label>
+                <div class="col-md-5 col-sm-5 col-xs-12">
+                    <input type="text" class="form-control" name="offset" value="{{ device_info.offset }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-md-3 col-sm-3 col-xs-12">经度 *</label>
+                <div class="col-md-5 col-sm-5 col-xs-12">
+                    <input type="text" class="form-control" name="longitude" value="{{ device_info.longitude }}">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-md-3 col-sm-3 col-xs-12">纬度 *</label>
+                <div class="col-md-5 col-sm-5 col-xs-12">
+                    <input type="text" class="form-control" name="latitude" value="{{ device_info.latitude }}">
+                </div>
+            </div>
+            <input type="hidden" name="station" value="{{ station_id }}">
+
+            <div class="ln_solid"></div>
+            <div class="form-group">
+                <div class="col-md-6 col-sm-6 col-xs-12 col-md-offset-3">
+                    <button type="button" id="device_info_button" class="btn btn-primary">确认修改</button>
+                </div>
+            </div>
+            {% csrf_token %}
+        </form>
+    </div>
+{% endblock %}
+
+{% block other_js %}
+    <script src="{% static 'laydate/laydate.js' %}"></script>
+    <script src="{% static 'js/bootstrap-select.min.js' %}"></script>
+    <script>
+        $('#device_info_button').on('click', function () {
+            $.ajax({
+                cache: false,
+                type: 'post',
+                dataType: 'json',
+                url: "{% url 'device_modify' station_id device_info.id %}",
+                data: $("#device_info_form").serialize(),
+                async: true,
+                success: function (data) {
+                    if (data.status === "success") {
+                        alert('修改信息成功');
+                        window.location.href = "{% url 'station_devices' station_id %}"
+                    } else {
+                        alert(data.errors);
+                        alert(data.msg);
+                        var msg = "";
+                        if (data.errors) {
+                            $.each(data.errors, function (i, value) {
+                                if (i === 'device_id') {
+                                    msg += "仪器编号" + value
+                                }else if (i === 'name'){
+                                    msg += "仪器名称" + value
+                                }else if (i === 'start_point'){
+                                    msg += "起点" + value
+                                }else if (i === 'offset'){
+                                    msg += "偏移" + value
+                                }else if (i === 'longitude'){
+                                    msg += "经度" + value
+                                }else if (i === 'latitude'){
+                                    msg += "纬度" + value
+                                }
+                            });
+                        }else{
+                            msg = "新增成功"
+                        }
+                        if (data.msg){
+                            alert(data.msg)
+                        }else{
+                            alert(msg);
+                        }
+
+                    }
+                }
+            })
+        })
+    </script>
+
+{% endblock %}
