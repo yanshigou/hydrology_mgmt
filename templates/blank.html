@@ -63,9 +63,9 @@
             </a>
         </li>
         <hr class="sidebar-divider">
-        <li {% if 'dataInfo/recordInfo' in request.path  or 'dataInfo/recordLocationInfo' in request.path or 'dataInfo/recordStatistical' in request.path  %}class="nav-item active table-active"
+        <li {% if 'dataInfo/dataInfoStation' in request.path or 'dataInfo/dataInfo/' in request.path %}class="nav-item active table-active"
             {% else %}class="nav-item"{% endif %}>
-            <a class="nav-link" href="">
+            <a class="nav-link" href="{% url 'data_info_station' %}">
                 <i class="fas fa-fw fa-tags"></i>
                 <span style="font-size: 15px">流量信息</span>
             </a>
@@ -107,9 +107,9 @@
             <hr class="sidebar-divider">
         {% endif %}
 
-        <li {% if 'users/sysSettings' in request.path %}class="nav-item active table-active"
+        <li {% if 'users/sysSettings' in request.path or 'users/sysStation' in request.path %}class="nav-item active table-active"
             {% else %}class="nav-item"{% endif %}>
-            <a class="nav-link" href="{% url 'sys_settings' %}">
+            <a class="nav-link" href="{% url 'sys_station' %}">
                 <i class="fas fa-fw fa-cogs"></i>
                 <span style="font-size: 15px">系统设置</span></a>
         </li>
@@ -276,7 +276,7 @@
 
             <!-- Begin Page Content -->
             {% block page_content %}
-                <iframe src="" width="100%" height="750px" frameborder="0"  style="font-size:14px">
+                <iframe src="{% url 'show_map' %}" width="100%" height="800px" frameborder="0"  style="font-size:14px">
                  </iframe>
             {% endblock %}
             <!-- /.container-fluid -->

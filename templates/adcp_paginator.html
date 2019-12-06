@@ -201,7 +201,7 @@
                         cache: false,
                         type: "POST",
                         dataType: 'json',
-                        url: "",
+                        url: "{% url 'adcp_data_info' %}",
                         data: dataStr,
                         async: true,
                         success: function (res) {
@@ -220,15 +220,10 @@
                     })
                 },
                 columns: [
-                    {data: "imei"},
-                    {data: "data_time"},
-                    {data: "lon_lat"},
+                    {data: "time"},
                     {data: "speed"},
                     {data: "direction"},
-                    {data: "accuracy"},
-                    {data: "altitude"},
-                    {data: "power"},
-                    {data: "satellites"},
+                    {data: "level"},
                 ]
             });
         };

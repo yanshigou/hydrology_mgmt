@@ -1046,7 +1046,7 @@ class SystemStationView(LoginRequiredMixin, View):
                 all_station = StationInfo.objects.filter(company__company_name=company)
             else:
                 all_station = ""
-        create_history_record(request.user, '查询所有测站点')
+        create_history_record(request.user, '系统设置查询所有测站点')
         return render(request, 'sys_station.html', {
             "all_station": all_station,
         })
