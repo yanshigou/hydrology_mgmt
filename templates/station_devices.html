@@ -99,7 +99,7 @@
 
                                 <td>
                                     {% if request.user.permission == "superadmin" or request.user.permission == "admin" %}
-                                        <a href="" style="text-decoration:none">
+                                        <a href="{% url 'device_modify' station_id device.id %}" style="text-decoration:none">
                                             <button type="button" class="btn btn-warning btn-sm" style="line-height: 1">
                                                 修改
                                             </button>
@@ -114,7 +114,7 @@
                                             </button>
                                         {% endif %}
                                         <button type="button" class="btn btn-danger btn-sm"
-                                                onclick="return deviceb({{ device.id }})" style="line-height: 1">删除
+                                                onclick="return deviceb({{ station_id }},{{ device.id }})" style="line-height: 1">删除
                                         </button>
                                     {% endif %}
                                 </td>
@@ -145,20 +145,21 @@
     <script src="{% static 'js/defaults-zh_CN.min.js' %}"></script>
 
     <script>
-        function deviceb1(station_id) {
+        function deviceb(station_id, device_id) {
             var msg = "删除此设备将会无法恢复\n\n您真的确定要删除吗？";
             if (confirm(msg) === true) {
-                if (station_id === undefined) {
+                if (station_id === undefined || device_id === undefined ) {
                     return false
                 }
                 $.ajax({
                     cache: false,
                     type: "POST",
                     dataType: 'json',
-                    url: "{% url 'station_del' %}",
+                    url: "{% url 'device_del' %}",
                     data: {
                         csrfmiddlewaretoken: '{{ csrf_token }}',
-                        "station_id": station_id
+                        "station_id": station_id,
+                        "device_id": device_id
                     },
                     async: true,
                     success: function (data) {
@@ -176,27 +177,27 @@
             }
         }
 
-        function enable_device1(station_id, is_active) {
+        function enable_device(device_id, is_active) {
             var msg = "";
             if (is_active === true) {
-                msg = "你确定要设为有效吗？";
+                msg = "你确定要设为正常使用吗？";
             } else {
-                msg = "你确定要设为无效吗？";
+                msg = "你确定要设为暂停使用吗？";
             }
             if (confirm(msg) === true) {
 
-                if (station_id === undefined) {
+                if (device_id === undefined) {
                     return false
                 }
                 $.ajax({
                     cache: false,
                     type: "POST",
                     dataType: 'json',
-                    url: "{% url 'station_status' %}",
+                    url: "{% url 'device_status' %}",
                     data: {
                         csrfmiddlewaretoken: '{{ csrf_token }}',
-                        "id": station_id,
-                        "station_status": is_active
+                        "id": device_id,
+                        "device_status": is_active
                     },
                     async: true,
                     success: function (data) {

@@ -55,7 +55,7 @@
         <!-- Heading -->
 
         <!-- Nav Item - Pages Collapse Menu -->
-        <li {% if 'station/info' in request.path or 'station/stationAdd' in request.path or 'station/stationModify' in request.path or 'station/stationIndex/' in request.path or 'station/stationSection/' in request.path or 'devices/info/' in request.path %}class="nav-item active table-active"
+        <li {% if 'station/info' in request.path or 'station/stationAdd' in request.path or 'station/stationModify' in request.path or 'station/stationIndex/' in request.path or 'station/stationSection/' in request.path or 'devices/info/' in request.path or 'devices/deviceModify/' in request.path or 'devices/deviceAdd/' in request.path %}class="nav-item active table-active"
             {% else %}class="nav-item"{% endif %}>
             <a class="nav-link" href="{% url 'station_info' %}">
                 <i class="fas fa-fw fa-house-damage"></i>
@@ -79,7 +79,7 @@
         <!-- Heading -->
 
         <!-- Nav Item - Charts -->
-        <li {% if 'dataInfo/ADCPInfo' in request.path or 'devices/deviceAdd' in request.path or 'devices/deviceStatus' in request.path or "devices/deviceView" in request.path %}class="nav-item active table-active"
+        <li {% if 'dataInfo/ADCPInfo' in request.path %}class="nav-item active table-active"
             {% else %}class="nav-item"{% endif %}>
             <a class="nav-link" href="{% url 'adcp_data_info' %}">
                 <i class="fas fa-fw fa-database"></i>

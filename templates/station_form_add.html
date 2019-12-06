@@ -118,7 +118,31 @@
                     alert('新增成功');
                     window.location.replace("{% url 'station_info' %}")
                 } else {
-                    alert(data.errors)
+                    var msg = "";
+                        if (data.errors) {
+                            $.each(data.errors, function (i, value) {
+                                if (i === 'station_name') {
+                                    msg += "站名" + value
+                                }else if (i === 'station_code'){
+                                    msg += "站码" + value
+                                }else if (i === 'river'){
+                                    msg += "河流" + value
+                                }else if (i === 'station_address'){
+                                    msg += "测站点地址" + value
+                                }else if (i === 'longitude'){
+                                    msg += "经度" + value
+                                }else if (i === 'latitude'){
+                                    msg += "纬度" + value
+                                }
+                            })
+                        }else{
+                            msg = "新增成功"
+                        }
+                        if (data.msg){
+                            alert(data.msg)
+                        }else{
+                            alert(msg);
+                        }
                 }
             }
         })
