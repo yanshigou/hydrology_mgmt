@@ -18,42 +18,49 @@
     <form class="form-horizontal form-label-left form-control-plaintext" id="sys_form">
         <input type="hidden" value="{{ sys_settings.id }}" name="sys_id">
         <div class="form-group">
-            <label class="control-label col-md-3 col-sm-3 col-xs-12">水位坐标最小值：</label>
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">测站点：</label>
+            <div class="col-md-3 col-sm-5 col-xs-12">
+                <input type="hidden" value="{{ sys_settings.station_id }}">
+                <input type="text" class="form-control" value="{{ sys_settings.station.station_name }}" disabled>
+            </div>
+        </div>
+        <div class="form-group">
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">水位坐标最小值（m）：</label>
             <div class="col-md-3 col-sm-5 col-xs-12">
                 <input type="text" class="form-control" name="water_min_level" value="{{ sys_settings.water_min_level }}">
             </div>
         </div>
 
         <div class="form-group">
-            <label class="control-label col-md-3 col-sm-3 col-xs-12">水位坐标最大值：</label>
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">水位坐标最大值（m）：</label>
             <div class="col-md-3 col-sm-5 col-xs-12">
                 <input type="text" class="form-control" name="water_max_level" value="{{ sys_settings.water_max_level }}">
             </div>
         </div>
 
         <div class="form-group">
-            <label class="control-label col-md-3 col-sm-3 col-xs-12">流量坐标最小值：</label>
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">流量坐标最小值（m³/s）：</label>
             <div class="col-md-3 col-sm-5 col-xs-12">
                 <input type="text" class="form-control" name="flow_min_level" value="{{ sys_settings.flow_min_level }}">
             </div>
         </div>
 
         <div class="form-group">
-            <label class="control-label col-md-3 col-sm-3 col-xs-12">流量坐标最大值：</label>
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">流量坐标最大值（m³/s）：</label>
             <div class="col-md-3 col-sm-5 col-xs-12">
                 <input type="text" class="form-control" name="flow_max_level" value="{{ sys_settings.flow_max_level }}">
             </div>
         </div>
 
         <div class="form-group">
-            <label class="control-label col-md-3 col-sm-3 col-xs-12">偏离报警阈值：</label>
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">偏离报警阈值（m）：</label>
             <div class="col-md-3 col-sm-5 col-xs-12">
                 <input type="text" class="form-control" name="deviate_value" value="{{ sys_settings.deviate_value }}">
             </div>
         </div>
 
         <div class="form-group">
-            <label class="control-label col-md-3 col-sm-3 col-xs-12">电压报警阈值：</label>
+            <label class="control-label col-md-3 col-sm-3 col-xs-12">电压报警阈值（V）：</label>
             <div class="col-md-3 col-sm-5 col-xs-12">
                 <input type="text" class="form-control" name="volt_value" value="{{ sys_settings.volt_value }}">
             </div>
@@ -94,13 +101,13 @@
             cache: false,
             type: 'post',
             dataType: 'json',
-            url: "{% url 'sys_settings' %}",
+            url: "{% url 'sys_settings' sys_settings.station_id %}",
             data: $("#sys_form").serialize(),
             async: true,
             success: function (data) {
                 if (data.status === "success") {
                     alert(data.msg);
-                    window.location.replace("{% url 'sys_settings' %}")
+                    window.location.replace("{% url 'sys_settings' sys_settings.station_id %}")
                 } else {
                     alert(data.msg)
                 }
