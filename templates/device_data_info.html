@@ -1,0 +1,212 @@
+{% extends 'blank.html' %}
+{% load  staticfiles %}
+
+{% block title %}
+    设备数据
+{% endblock %}
+{% block topbar_title %}
+    设备数据
+{% endblock %}
+{% block other_css %}
+    <!-- Custom styles for this page -->
+    <link href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap-select.min.css' %}" rel="stylesheet">
+    <style>
+        option:nth-child(1) {
+            display: none;
+        }
+    </style>
+    <style>
+        html, body, #container {
+            height: 100%;
+            width: 100%;
+        }
+
+        .input-card .btn {
+            margin-right: 1.2rem;
+            width: 9rem;
+        }
+
+        .input-card .btn-sm {
+            margin-right: 1.2rem;
+            width: 3.5rem;
+        }
+
+        .input-card .btn:last-child {
+            margin-right: 0;
+        }
+    </style>
+    <style>
+        body, td {
+            font-size: 12px !important
+        }
+
+        th, td {
+            white-space: normal;
+        }
+
+        thead > tr > th {
+            white-space: nowrap;
+        }
+
+        .btn {
+            white-space: nowrap;
+            line-height: 1;
+            font-size: 12px !important;
+        }
+    </style>
+{% endblock %}
+
+{% block head_scripts %}
+    <script src="{% static 'polyfill.js' %}"></script>
+    <script src="{% static 'cascader.js' %}"></script>
+
+{% endblock %}
+
+{% block page_content %}
+    <div class="container-fluid" style="font-size:13px">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'index' %}">主页</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'station_devices' station_id %}">设备管理</a></li>
+            <li class="breadcrumb-item active">设备数据</li>
+        </ol>
+        <!-- Page Heading -->
+
+        <form action="" method="post" id="filterDataForm">
+            <p>
+                日期选项：
+                <input type="text" class="" id="date_time0" name="start_time" value="{{ start_time }}">
+                &nbsp;至 &nbsp;
+                <input type="text" class="" id="date_time1" name="end_time" value="{{ end_time }}">
+                &nbsp;
+            </p>
+
+            <p></p>
+            {% csrf_token %}
+            <p id="all_button">
+            <a>
+                <button type="submit" class="btn btn-primary btn-sm">查询</button>
+            </a>
+            <a href="" style="text-decoration:none">
+                <button type="button" class="btn btn-primary btn-sm">重置</button>
+            </a>
+        </p>
+        </form>
+
+        <div id="div_content">
+            <!-- DataTales Example -->
+            <div class="card shadow mb-4">
+                <div class="alert" style="display: none;"></div>
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary"></h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                            <thead class="thead-dark">
+                            <tr>
+                                <th>仪器名称</th>
+                                <th>时间</th>
+                                <th>流速(m/s)</th>
+                                <th>流向(° )</th>
+                                <th>水位(m)</th>
+                                <th>流量(m³/s)</th>
+                                <th>面积(㎡)</th>
+                                <th>电压(V)</th>
+                                <th>操作</th>
+                            </tr>
+                            </thead>
+                            <tbody id="t_body">
+                            {% for d in data_info %}
+                                <tr>
+                                    <td>{{ d.device }}</td>
+                                    <td>{{ d.time }}</td>
+                                    <td>{{ d.speed }}</td>
+                                    <td>{{ d.direction }}</td>
+                                    <td>{{ d.level }}</td>
+                                    <td>{{ d.flow }}</td>
+                                    <td>{{ d.acreage }}</td>
+                                    <td>{{ d.power }}</td>
+                                    <td>查看详情</td>
+                                </tr>
+                            {% endfor %}
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block other_js %}
+
+    <!-- Page level plugins -->
+    <script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+    <script src="{% static 'laydate/laydate.js' %}"></script>
+    <!-- Page level custom scripts -->
+    <script src="{% static 'js/demo/datatables-demo.js' %}"></script>
+    <script src="{% static 'js/bootstrap-select.min.js' %}"></script>
+    <script src="{% static 'js/defaults-zh_CN.min.js' %}"></script>
+    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.13&key=5cda232d2d1f782a634096167304eb59">
+    </script>
+        <script>
+        //执行一个laydate实例
+        laydate.render({
+            elem: '#date_time0',
+            type: 'datetime'
+        });
+        laydate.render({
+            elem: '#date_time1',
+            type: 'datetime'
+        });
+    </script>
+    <script>
+        $(function () {
+            reloadDatatables();
+            {#total_nums();#}
+        });
+        var reloadDatatables = function () {
+            {#console.log('触发了');#}
+            var tables = $('#dataTable').DataTable({
+                select: 'single',
+                destroy: true,
+                'bAutoWidth': false,
+                "pagingType": "full_numbers",
+                "language": {
+                    "decimal": "",
+                    "info": "",
+                    "infoEmpty": "没有数据",
+                    "emptyTable": "没有数据",
+                    "infoFiltered": "(从总数 _MAX_ 条中 过滤)",
+                    "infoPostFix": "",
+                    "thousands": ",",
+                    "lengthMenu": "每页显示 _MENU_ 条数据",
+                    "loadingRecords": "加载中...",
+                    "processing": "处理中...",
+                    "search": "搜索:",
+                    "zeroRecords": "没有搜索到数据",
+                    "paginate": {
+                        "first": "第一页",
+                        "last": "最后一页",
+                        "next": "下一页",
+                        "previous": "上一页"
+                    },
+                    "aria": {
+                        "sortAscending": ": 点击以按升序排序",
+                        "sortDescending": ": 点击以按降序排序"
+                    }
+                },
+                "autoWidth": false,	//禁用自动调整列宽
+                "processing": true,//载入数据的时候是否显示“载入中”
+                "searching": false,//去掉搜索框
+                "deferRender": true,
+                //'paging': false,  //关闭分页
+            });
+        };
+    </script>
+    <script src="//webapi.amap.com/ui/1.0/main.js?v=1.0.11"></script>
+{% endblock %}
