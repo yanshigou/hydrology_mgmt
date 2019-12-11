@@ -1,0 +1,120 @@
+{% load staticfiles %}
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <meta http-equiv="X-UA-Compatible" content="chrome=1">
+    <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
+{#    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/>#}
+    <style type="text/css">
+        body, html, #container {
+            height: 100%;
+            margin: 0;
+            font: 12px Arial;
+        }
+
+        .custom-input-card .btn:last-child {
+            margin-left: 1rem;
+        }
+
+        .content-window-card p {
+            height: 2rem;
+        }
+
+        .input-card {
+            display: flex;
+            flex-direction: column;
+            min-width: 0;
+            word-wrap: break-word;
+            background-color: #fff;
+            background-clip: border-box;
+            width: 150px;
+            height: 30px;
+            border-width: 0;
+            border-radius: 0.4rem;
+            box-shadow: 0 2px 6px 0 rgba(114, 124, 245, .5);
+            bottom: 1rem;
+            right: 1rem;
+            -ms-flex: 1 1 auto;
+            flex: 1 1 auto;
+            text-align: center;
+            line-height: 30px;
+        }
+    </style>
+    <link rel="icon" type="image/png" href="{% static 'images/favicon.ico' %}">
+    <title>测站点地图</title>
+</head>
+<body>
+<div id="container" tabindex="0"></div>
+<script src="https://webapi.amap.com/maps?v=1.4.15&key=5cda232d2d1f782a634096167304eb59"></script>
+<script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
+<script type="text/javascript">
+    var station_data = {{ station_data|safe }};
+    //console.log(station_data);
+    var provinces = [];
+    var s_data = {};
+    $.each(station_data, function (i, value) {
+        s_data = {};
+        s_data['name'] = value.name;
+        s_data['center'] = value.center;
+        s_data['type'] = value.type;
+        s_data['station_id'] = value.station_id;
+        //console.log(s_data);
+        provinces.push(s_data);
+    });
+    //console.log(provinces);
+    var map = new AMap.Map('container', {resizeEnable: true, zoom: 4});
+    var markers = []; //province见Demo引用的JS文件
+    var host = location.host;
+    console.log(host);
+    for (var i = 0; i < provinces.length; i += 1) {
+        var marker;
+        var station_id = provinces[i].station_id;
+        console.log(station_id);
+        var src = 'http://' + host + '/station/stationIndex/' + station_id + '/';
+        console.log(src);
+        var content = "<div class='input-card content-window-card'><a onclick=\"javascript:top.location.href='" + src + "'\">" + provinces[i].name + "</a></div>";
+        var icon;
+        if (provinces[i].type === 0) {
+             icon = new AMap.Icon({
+                image: 'http://' + host + '/media/image/station_24.png',
+                size: new AMap.Size(24, 24),
+            });
+            marker = new AMap.Marker({
+                icon: icon,
+                position: provinces[i].center.split(','),
+                offset: new AMap.Pixel(-12, -12),
+                zIndex: 101,
+                title: provinces[i].name,
+                map: map
+            });
+
+        } else {
+            icon = new AMap.Icon({
+                image: 'http://' + host + '/media/image/station_24_2.png',
+                size: new AMap.Size(24, 24),
+            });
+            marker = new AMap.Marker({
+                icon: icon,
+                position: provinces[i].center.split(','),
+                offset: new AMap.Pixel(-12, -12),
+                zIndex: 101,
+                title: provinces[i].name,
+                map: map
+            });
+
+        }
+        guzhang = new AMap.Marker({
+            content: content,
+            position: provinces[i].center.split(','),
+            title: provinces[i].name,
+            offset: new AMap.Pixel(-70, -45),   // 设置测站点名字与图片相对位置
+            map: map
+        });
+        markers.push(marker);
+    }
+    map.setFitView();
+</script>
+
+</body>
+</html>
