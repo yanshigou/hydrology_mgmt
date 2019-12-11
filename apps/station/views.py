@@ -57,7 +57,8 @@ class StationAddView(LoginRequiredMixin, View):
             station_form = StationInfoForm(request.POST)
             if station_form.is_valid():
                 station_form.save()
-                create_history_record(request.user, '新增测站点 %s %s' % (request.POST.get('station_code'), request.POST.get('station_name')))
+                create_history_record(request.user, '新增测站点 %s %s' % (
+                request.POST.get('station_code'), request.POST.get('station_name')))
                 return JsonResponse({"status": "success"})
 
             errors = dict(station_form.errors.items())
@@ -189,6 +190,7 @@ class StationIndexView(LoginRequiredMixin, View):
     """
         测站点主页
     """
+
     def get(self, request, station_id):
         permission = request.user.permission
         print(permission)
@@ -221,6 +223,7 @@ class StationSectionView(LoginRequiredMixin, View):
     """
         大断面页面
     """
+
     def get(self, request, station_id):
         permission = request.user.permission
         print(permission)
@@ -306,9 +309,36 @@ class StationSectionView(LoginRequiredMixin, View):
         })
 
 
-class ShowMapView(View):
+class ShowMapView(LoginRequiredMixin, View):
     def get(self, request):
-        return render(request, "map.html")
+        permission = request.user.permission
+        if permission == 'superadmin':
+            all_station = StationInfo.objects.filter(station_status=True)
+        else:
+            try:
+                company = request.user.company.company_name
+            except Exception as e:
+                print(e)
+                return JsonResponse({"status": "fail"})
+            if company:
+                all_station = StationInfo.objects.filter(company__company_name=company, station_status=True)
+            else:
+                all_station = []
+        station_data = list()
+        for station in all_station:
+            is_normal = station.is_normal
+            if is_normal:
+                station_type = 1
+            else:
+                station_type = 0
+            station_data.append({
+                "station_id": station.id,
+                "name": station.station_name,
+                "center": str(station.longitude) + "," + str(station.latitude),
+                "type": station_type,
+            })
+        print(station_data)
+        return render(request, "map2.html", {"station_data": station_data})
 
     def post(self, request):
         permission = request.user.permission
@@ -327,7 +357,6 @@ class ShowMapView(View):
         a = ""
         print(all_station)
         for station in all_station:
-
             a += str(station.longitude) + ',' + str(station.latitude) + ',' + str(station.station_name) + '\n'
 
         return JsonResponse({"status": "success", "str_data": a})

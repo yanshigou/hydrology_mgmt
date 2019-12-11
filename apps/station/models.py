@@ -17,6 +17,7 @@ class StationInfo(models.Model):
     longitude = models.CharField(max_length=30, verbose_name='经度')
     latitude = models.CharField(max_length=30, verbose_name='纬度')
     station_status = models.BooleanField(default=True, verbose_name="是否有效")
+    is_normal = models.BooleanField(default=True, verbose_name="是否正常")
     station_address = models.CharField(max_length=200, verbose_name="站点地址")
     section = models.ForeignKey(SectionFile, verbose_name="大断面", null=True, blank=True)
 
