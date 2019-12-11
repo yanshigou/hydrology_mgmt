@@ -99,6 +99,11 @@
 
                                 <td>
                                     {% if request.user.permission == "superadmin" or request.user.permission == "admin" %}
+                                        <a href="" style="text-decoration:none">
+                                            <button type="button" class="btn btn-success btn-sm" style="line-height: 1">
+                                                查看
+                                            </button>
+                                        </a>
                                         <a href="{% url 'device_modify' station_id device.id %}" style="text-decoration:none">
                                             <button type="button" class="btn btn-warning btn-sm" style="line-height: 1">
                                                 修改

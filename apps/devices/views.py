@@ -4,10 +4,12 @@ from django.http import HttpResponseRedirect, JsonResponse
 from django.core.urlresolvers import reverse
 
 from .models import DevicesInfo, StationInfo
+from datainfo.models import ADCPDataInfo, ADCPLevelDataInfo
 from .forms import DevicesInfoForm, DevicesStatusForm
 
 from myutils.mixin_utils import LoginRequiredMixin
 from myutils.utils import create_history_record
+from datetime import datetime, timedelta
 
 
 class DevicesInfoView(LoginRequiredMixin, View):
@@ -42,6 +44,7 @@ class StationDeviceSelectView(View):
     """
         站点及其设备
     """
+
     def post(self, request):
         station_id = request.POST.get('station_id')
         if station_id:
@@ -82,7 +85,8 @@ class DeviceAddView(LoginRequiredMixin, View):
             device_form = DevicesInfoForm(request.POST)
             if device_form.is_valid():
                 device_form.save()
-                create_history_record(request.user, '新增设备 %s %s' % (request.POST.get('device_id'), request.POST.get("name")))
+                create_history_record(request.user,
+                                      '新增设备 %s %s' % (request.POST.get('device_id'), request.POST.get("name")))
                 return JsonResponse({"status": "success"})
 
             errors = dict(device_form.errors.items())
@@ -115,7 +119,8 @@ class DeviceModifyView(LoginRequiredMixin, View):
             else:
                 try:
                     company_id = request.user.company.id
-                    device_info = DevicesInfo.objects.get(id=device_id, station_id=station_id, station__company_id=company_id)
+                    device_info = DevicesInfo.objects.get(id=device_id, station_id=station_id,
+                                                          station__company_id=company_id)
                     return render(request, "device_modify_from.html", {
                         "device_info": device_info,
                         "station_id": station_id
@@ -208,3 +213,85 @@ class DeviceStatusView(LoginRequiredMixin, View):
             return JsonResponse({
                 "status": str(e)
             })
+
+
+class DeviceDataInfoView(LoginRequiredMixin, View):
+    """
+    查询单个设备所有数据
+    """
+
+    def get(self, request, device_id):
+        permission = request.user.permission
+        print(permission)
+        end_time = datetime.now()
+        start_time = end_time + timedelta(days=-3)
+        if permission == 'superadmin':
+            device = DevicesInfo.objects.get(id=device_id)
+        else:
+            company_id = request.user.company.id
+            device = DevicesInfo.objects.get(station__company_id=company_id, id=device_id)
+        station_id = device.station_id
+        data_info = list()
+
+        adcp_data_infos = ADCPDataInfo.objects.filter(device_id=device.id, time__range=(start_time, end_time))
+        adcp_level_data_infos = ADCPLevelDataInfo.objects.filter(device_id=device.id, time__range=(start_time, end_time))
+
+        for adcp_data_info in adcp_data_infos:
+            data_dict = dict()
+            data_dict['device'] = device.name
+            data_dict['time'] = datetime.strftime(adcp_data_info.time, "%Y-%m-%d %H:%M:%S")
+            data_dict['speed'] = adcp_data_info.speed
+            data_dict['direction'] = adcp_data_info.direction
+            data_dict['depth'] = adcp_data_info.depth
+            data_dict['distance'] = adcp_data_info.distance
+            adcp_level_data_info = adcp_level_data_infos.filter(
+                time__range=(adcp_data_info.time + timedelta(minutes=-10), adcp_data_info.time + timedelta(minutes=10))
+            ).last()
+            data_dict['level'] = adcp_level_data_info.level
+            data_dict['power'] = adcp_level_data_info.power
+            data_info.append(data_dict)
+        # print(data_info)
+        return render(request, 'device_data_info.html', {
+            "station_id": station_id,
+            "data_info": data_info,
+            "start_time": start_time,
+            "end_time": end_time,
+        })
+
+    def post(self, request, device_id):
+        permission = request.user.permission
+        print(permission)
+        end_time = request.POST.get("end_time")
+        start_time = request.POST.get("start_time")
+        if permission == 'superadmin':
+            device = DevicesInfo.objects.get(id=device_id)
+        else:
+            company_id = request.user.company.id
+            device = DevicesInfo.objects.get(station__company_id=company_id, id=device_id)
+        station_id = device.station_id
+        data_info = list()
+
+        adcp_data_infos = ADCPDataInfo.objects.filter(device_id=device.id, time__range=(start_time, end_time))
+        adcp_level_data_infos = ADCPLevelDataInfo.objects.filter(device_id=device.id, time__range=(start_time, end_time))
+
+        for adcp_data_info in adcp_data_infos:
+            data_dict = dict()
+            data_dict['device'] = device.name
+            data_dict['time'] = datetime.strftime(adcp_data_info.time, "%Y-%m-%d %H:%M:%S")
+            data_dict['speed'] = adcp_data_info.speed
+            data_dict['direction'] = adcp_data_info.direction
+            data_dict['depth'] = adcp_data_info.depth
+            data_dict['distance'] = adcp_data_info.distance
+            adcp_level_data_info = adcp_level_data_infos.filter(
+                time__range=(adcp_data_info.time + timedelta(minutes=-10), adcp_data_info.time + timedelta(minutes=10))
+            ).last()
+            data_dict['level'] = adcp_level_data_info.level
+            data_dict['power'] = adcp_level_data_info.power
+            data_info.append(data_dict)
+        # print(data_info)
+        return render(request, 'device_data_info.html', {
+            "station_id": station_id,
+            "data_info": data_info,
+            "start_time": start_time,
+            "end_time": end_time,
+        })

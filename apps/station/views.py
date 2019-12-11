@@ -340,23 +340,23 @@ class ShowMapView(LoginRequiredMixin, View):
         print(station_data)
         return render(request, "map2.html", {"station_data": station_data})
 
-    def post(self, request):
-        permission = request.user.permission
-        if permission == 'superadmin':
-            all_station = StationInfo.objects.filter(station_status=True)
-        else:
-            try:
-                company = request.user.company.company_name
-            except Exception as e:
-                print(e)
-                return JsonResponse({"status": "fail"})
-            if company:
-                all_station = StationInfo.objects.filter(company__company_name=company, station_status=True)
-            else:
-                all_station = []
-        a = ""
-        print(all_station)
-        for station in all_station:
-            a += str(station.longitude) + ',' + str(station.latitude) + ',' + str(station.station_name) + '\n'
-
-        return JsonResponse({"status": "success", "str_data": a})
+    # def post(self, request):
+    #     permission = request.user.permission
+    #     if permission == 'superadmin':
+    #         all_station = StationInfo.objects.filter(station_status=True)
+    #     else:
+    #         try:
+    #             company = request.user.company.company_name
+    #         except Exception as e:
+    #             print(e)
+    #             return JsonResponse({"status": "fail"})
+    #         if company:
+    #             all_station = StationInfo.objects.filter(company__company_name=company, station_status=True)
+    #         else:
+    #             all_station = []
+    #     a = ""
+    #     print(all_station)
+    #     for station in all_station:
+    #         a += str(station.longitude) + ',' + str(station.latitude) + ',' + str(station.station_name) + '\n'
+    #
+    #     return JsonResponse({"status": "success", "str_data": a})
