@@ -89,10 +89,18 @@
             </div>
 
             <div class="form-group">
-                <label class="control-label col-md-3 col-sm-3 col-xs-12">状态 *</label>
+                <label class="control-label col-md-3 col-sm-3 col-xs-12">有效状态 *</label>
                 <div class="col-md-5 col-sm-5 col-xs-12">
                     <input type="text" class="form-control" name="station_address"
                            value="{% if station_info.station_status %}有效{% else %}无效{% endif %}" disabled>
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label class="control-label col-md-3 col-sm-3 col-xs-12">站点状态 *</label>
+                <div class="col-md-5 col-sm-5 col-xs-12">
+                    <input type="text" class="form-control" name="station_address"
+                           value="{% if station_info.is_normal %}正常{% else %}故障{% endif %}" disabled>
                 </div>
             </div>
 

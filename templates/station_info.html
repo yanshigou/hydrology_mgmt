@@ -54,7 +54,8 @@
                             <th>河流</th>
                             <th>经度</th>
                             <th>纬度</th>
-                            <th>状态</th>
+                            <th>有效状态</th>
+                            <th>站点状态</th>
                             {% if request.user.permission == "superadmin" %}
                                 <th>所属公司</th>
                             {% endif %}
@@ -72,6 +73,10 @@
                                 <td {% if station.station_status %}style="color: green" {% else %}style="color: red"
                                     {% endif %}>
                                     {% if station.station_status %}有效{% else %}无效{% endif %}
+                                </td>
+                                <td {% if station.is_normal %}style="color: green" {% else %}style="color: red"
+                                    {% endif %}>
+                                    {% if station.is_normal %}正常{% else %}故障{% endif %}
                                 </td>
                                 {% if request.user.permission == "superadmin" %}
                                     <td>{{ station.company.company_name }}</td>
