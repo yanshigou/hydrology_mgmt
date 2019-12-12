@@ -49,13 +49,13 @@
                     <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
                         <thead class="thead-dark">
                         <tr>
+                            <th>站点状态</th>
                             <th>站名</th>
                             <th>站码</th>
                             <th>河流</th>
                             <th>经度</th>
                             <th>纬度</th>
                             <th>有效状态</th>
-                            <th>站点状态</th>
                             {% if request.user.permission == "superadmin" %}
                                 <th>所属公司</th>
                             {% endif %}
@@ -65,6 +65,10 @@
                         <tbody id="t_body">
                         {% for station in all_station %}
                             <tr>
+                                <td {% if station.is_normal %}style="color: green" {% else %}style="color: red"
+                                    {% endif %}>
+                                    {% if station.is_normal %}正常{% else %}故障{% endif %}
+                                </td>
                                 <td>{{ station.station_name }}</td>
                                 <td>{{ station.station_code }}</td>
                                 <td>{{ station.river }}</td>
@@ -74,10 +78,7 @@
                                     {% endif %}>
                                     {% if station.station_status %}有效{% else %}无效{% endif %}
                                 </td>
-                                <td {% if station.is_normal %}style="color: green" {% else %}style="color: red"
-                                    {% endif %}>
-                                    {% if station.is_normal %}正常{% else %}故障{% endif %}
-                                </td>
+
                                 {% if request.user.permission == "superadmin" %}
                                     <td>{{ station.company.company_name }}</td>
                                 {% endif %}

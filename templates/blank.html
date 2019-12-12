@@ -63,7 +63,7 @@
             </a>
         </li>
         <hr class="sidebar-divider">
-        <li {% if 'dataInfo/dataInfoStation' in request.path or 'dataInfo/dataInfo/' in request.path %}class="nav-item active table-active"
+        <li {% if 'dataInfo/dataInfoStation' in request.path or 'dataInfo/dataInfo/' in request.path or 'devices/dataInfo/' in request.path %}class="nav-item active table-active"
             {% else %}class="nav-item"{% endif %}>
             <a class="nav-link" href="{% url 'data_info_station' %}">
                 <i class="fas fa-fw fa-tags"></i>
