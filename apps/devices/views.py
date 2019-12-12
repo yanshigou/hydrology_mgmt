@@ -28,7 +28,7 @@ class DevicesInfoView(LoginRequiredMixin, View):
             if company:
                 all_devices = DevicesInfo.objects.filter(station_id=station_id, station__company__company_name=company)
             else:
-                all_devices = ""
+                all_devices = DevicesInfo.objects.filter(station_id=station_id, station__company__company_name="")
         try:
             station_name = StationInfo.objects.get(id=station_id).station_name
             create_history_record(request.user, '查询测站点%s所有设备' % station_name)

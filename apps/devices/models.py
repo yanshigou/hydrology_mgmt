@@ -12,7 +12,8 @@ class DevicesInfo(models.Model):
     start_point = models.CharField(max_length=20, verbose_name="起点")
     offset = models.CharField(max_length=20, verbose_name="偏移")
     # elevation = models.CharField(max_length=20, verbose_name="高程")
-    device_status = models.BooleanField(default=True, verbose_name="仪器状态")
+    device_status = models.BooleanField(default=True, verbose_name="使用状态")
+    is_normal = models.BooleanField(default=True, verbose_name="是否正常")
     longitude = models.CharField(max_length=30, verbose_name='经度')
     latitude = models.CharField(max_length=30, verbose_name='纬度')
 
