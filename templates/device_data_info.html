@@ -60,14 +60,14 @@
 {% block head_scripts %}
     <script src="{% static 'polyfill.js' %}"></script>
     <script src="{% static 'cascader.js' %}"></script>
-
+    <script src="{% static 'echarts/dist/echarts.js' %}"></script>
 {% endblock %}
 
 {% block page_content %}
     <div class="container-fluid" style="font-size:13px">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'index' %}">主页</a></li>
-            <li class="breadcrumb-item"><a href="{% url 'station_devices' station_id %}">设备管理</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'data_info' station_id %}">流量信息</a></li>
             <li class="breadcrumb-item active">设备数据</li>
         </ol>
         <!-- Page Heading -->
@@ -81,6 +81,21 @@
                 &nbsp;
             </p>
 
+            <p>
+                样本导航：
+                <select name="station_id"  class="address selectpicker" id="station_id">
+{#                    {% for i in times %}#}
+{#                        <option value="{{ i.id }}">{{ i.station_name }}</option>#}
+{#                    {% endfor %}#}
+                    <option value="2019-12-12 15:00:00">2019-12-12 15:00:00</option>
+                    <option value="2019-12-12 15:10:00">2019-12-12 15:10:00</option>
+                    <option value="2019-12-12 15:20:00">2019-12-12 15:20:00</option>
+                    <option value="2019-12-12 15:30:00">2019-12-12 15:30:00</option>
+                    <option value="2019-12-12 15:40:00">2019-12-12 15:40:00</option>
+                    <option value="2019-12-12 15:50:00" selected>2019-12-12 15:50:00</option>
+                </select>
+            </p>
+
             <p></p>
             {% csrf_token %}
             <p id="all_button">
@@ -92,7 +107,9 @@
             </a>
         </p>
         </form>
+        <strong>仪器名称：1号ADCP 仪器编号：60100001 仪器类型：走航式ADCP</strong>
 
+        <p></p>
         <div id="div_content">
             <!-- DataTales Example -->
             <div class="card shadow mb-4">
@@ -105,31 +122,80 @@
                         <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
                             <thead class="thead-dark">
                             <tr>
-                                <th>仪器名称</th>
-                                <th>时间</th>
+                                <th>水位(m)</th>
                                 <th>流速(m/s)</th>
                                 <th>流向(° )</th>
-                                <th>水位(m)</th>
-                                <th>流量(m³/s)</th>
-                                <th>面积(㎡)</th>
-                                <th>电压(V)</th>
-                                <th>操作</th>
                             </tr>
                             </thead>
                             <tbody id="t_body">
-                            {% for d in data_info %}
+{#                            {% for d in data_info %}#}
+{#                                <tr>#}
+{#                                    <td>{{ d.device }}</td>#}
+{#                                    <td>{{ d.time }}</td>#}
+{#                                    <td>{{ d.speed }}</td>#}
+{#                                    <td>{{ d.direction }}</td>#}
+{#                                    <td>{{ d.level }}</td>#}
+{#                                    <td>{{ d.flow }}</td>#}
+{#                                    <td>{{ d.acreage }}</td>#}
+{#                                    <td>{{ d.power }}</td>#}
+{#                                    <td>查看详情</td>#}
+{#                                </tr>#}
+{#                            {% endfor %}#}
                                 <tr>
-                                    <td>{{ d.device }}</td>
-                                    <td>{{ d.time }}</td>
-                                    <td>{{ d.speed }}</td>
-                                    <td>{{ d.direction }}</td>
-                                    <td>{{ d.level }}</td>
-                                    <td>{{ d.flow }}</td>
-                                    <td>{{ d.acreage }}</td>
-                                    <td>{{ d.power }}</td>
-                                    <td>查看详情</td>
+                                    <td>1.68</td>
+                                    <td>0.781</td>
+                                    <td>8.370</td>
                                 </tr>
-                            {% endfor %}
+                                <tr>
+                                    <td>2.18</td>
+                                    <td>0.774</td>
+                                    <td>6.420</td>
+                                </tr>
+                                <tr>
+                                    <td>2.68</td>
+                                    <td>0.752</td>
+                                    <td>6.620</td>
+                                </tr>
+                                <tr>
+                                    <td>3.18</td>
+                                    <td>0.733</td>
+                                    <td>9.260</td>
+                                </tr>
+                                <tr>
+                                    <td>xxx</td>
+                                    <td>xxx</td>
+                                    <td>xxx</td>
+                                </tr>
+                                <tr>
+                                    <td>xxx</td>
+                                    <td>xxx</td>
+                                    <td>xxx</td>
+                                </tr>
+                                <tr>
+                                    <td>xxx</td>
+                                    <td>xxx</td>
+                                    <td>xxx</td>
+                                </tr>
+                                <tr>
+                                    <td>xxx</td>
+                                    <td>xxx</td>
+                                    <td>xxx</td>
+                                </tr>
+                                <tr>
+                                    <td>xxx</td>
+                                    <td>xxx</td>
+                                    <td>xxx</td>
+                                </tr>
+                                <tr>
+                                    <td>xxx</td>
+                                    <td>xxx</td>
+                                    <td>xxx</td>
+                                </tr>
+                                <tr>
+                                    <td>xxx</td>
+                                    <td>xxx</td>
+                                    <td>xxx</td>
+                                </tr>
 
 
                             </tbody>
@@ -138,6 +204,7 @@
                 </div>
             </div>
         </div>
+        <div id="main" style="width: auto;height: 600px;"></div>
     </div>
 {% endblock %}
 
@@ -151,9 +218,189 @@
     <script src="{% static 'js/demo/datatables-demo.js' %}"></script>
     <script src="{% static 'js/bootstrap-select.min.js' %}"></script>
     <script src="{% static 'js/defaults-zh_CN.min.js' %}"></script>
-    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.13&key=5cda232d2d1f782a634096167304eb59">
+{#    <script type="text/javascript">#}
+{#        $(function () {#}
+{#            // 基于准备好的dom，初始化echarts实例#}
+{#            var myChart = echarts.init(document.getElementById('main'));#}
+{##}
+{#            // 指定图表的配置项和数据#}
+            {#console.log({{ all_address|safe }});#}
+            {#console.log({{ all_address_count|safe }});#}
+{#            var option = {#}
+{#                    toolbox: {#}
+{#                        show: true,#}
+{#                        feature: {#}
+{##}
+{#                            saveAsImage: {#}
+{#                                show: true,#}
+{#                                excludeComponents:#}
+{#                                    ['toolbox'],#}
+{#                                title:#}
+{#                                    "导出",#}
+{#                                pixelRatio:#}
+{#                                    2#}
+{#                            }#}
+{#                        }#}
+{#                    },#}
+{#                    color: ['#05599E', '#000000'],#}
+{#                    title:#}
+{#                        {#}
+{#                            text: '水文大断面'#}
+{#                        }#}
+{#                    ,#}
+{#                    tooltip: {}#}
+{#                    ,#}
+{#                    legend: {#}
+{#                        data: ['河底高程(m)'],#}
+{##}
+{#                    }#}
+{#                    ,#}
+{#                    grid: {#}
+{#                        left: '10%',#}
+{#                        bottom: '25%',#}
+{#                        right: '5%'#}
+                        {#containLabel: true#}
+{#                    }#}
+{#                    ,#}
+{#                    xAxis: {#}
+                        {#show: false,#}
+{#                        boundaryGap: false,#}
+{#                        name:'起点距（m）',#}
+{#                        nameLocation: "center",#}
+{#                        type: 'category',#}
+{#                        nameGap: 40,#}
+{#                        nameTextStyle: {#}
+{#                          fontSize: 15#}
+{#                        },#}
+{#                       data: [0, 1, 2, 3, 4],#}
+{#                        axisLabel: {}#}
+{#                        ,#}
+{#                        axisTick: {#}
+{#                            alignWithLabel: true#}
+{#                        }#}
+{#                    },#}
+{#                    yAxis: {#}
+{#                        name:'河底高程（m）',#}
+{#                        nameLocation: "center",#}
+{#                        type: 'value',#}
+{#                        nameGap: 40,#}
+{#                        nameTextStyle: {#}
+{#                          fontSize: 15#}
+{#                        },#}
+{#                    }#}
+{#                    ,#}
+{#                    series: [#}
+{#                        {#}
+{#                            //name: '河底高程(m)',#}
+{#                            type: 'line',#}
+{#                            //smooth: true,//平滑曲线#}
+{#                            //symbol: 'none',  //取消折点圆圈#}
+{#                            data: [0, 1, 2, 3, 4],#}
+{#                            //areaStyle: {},#}
+{##}
+{#                        },#}
+{##}
+{#                    ]#}
+{#                }#}
+{#           ;#}
+{#            // 使用刚指定的配置项和数据显示图表。#}
+{#            myChart.setOption(option);#}
+            {#myChart.showLoading();#}
+{##}
+{#        })#}
+{#    </script>#}
+    <script>
+        $(function () {
+            // 基于准备好的dom，初始化echarts实例
+            var myChart = echarts.init(document.getElementById('main'));
+            var option = {
+                    toolbox: {
+                        show: true,
+                        feature: {
+                            saveAsImage: {
+                                show: true,
+                                excludeComponents:
+                                    ['toolbox'],
+                                title:
+                                    "导出",
+                                pixelRatio:
+                                    2
+                            }
+                        }
+                    },
+                    color: ["#3366cc", "#dc3912", "#ff9900", "#109618", "#990099", "#0099c6", "#dd4477", "#66aa00",
+                        "#b82e2e", "#316395", "#994499", "#22aa99", "#aaaa11", "#6633cc", "#e67300", "#8b0707",
+                        "#651067", "#329262", "#5574a6", "#3b3eac"],
+                    title:
+                        {
+                            text: '流速球速度走势图'
+                        }
+                    ,
+                    tooltip: {}
+                    ,
+                    legend: {
+                        data: ['流速', '流向']
+                    }
+                    ,
+                    grid: {
+                        left: '10%',
+                        bottom: '25%',
+                        right: '1%'
+                        {#containLabel: true#}
+                    }
+                    ,
+                    xAxis: {
+                        boundaryGap: false,
+                        type: 'category',
+                        data: [0, 72 ,144, 216, 288, 360],
+                        axisLabel: {
+                            //interval: 100000,
+                            //showMinLabel: true,
+                            //showMaxLabel: true,
+                            rotate:
+                                40
+                        }
+                        ,
+                        axisTick: {
+                            alignWithLabel: true
+                        }
+                    },
+                    yAxis: {
+                        name:'水深（m）',
+                        nameLocation: "center",
+                        type: 'value',
+                        nameGap: 40,
+                        nameTextStyle: {
+                          fontSize: 15
+                        },
+                    },
+                    dataZoom: [
+                        {
+                            show: true,
+                            realtime: true,
+                            start: 0,
+                            end: 100
+                        },
+                        {
+                            type: 'inside',
+                            realtime: true,
+                            start: 0,
+                            end: 100
+                        }
+                    ],
+                    series: [
+                        {name: "流速", type: "line", data: [1, 2, 3, 4, 5, 6]},
+                        {name: "流向", type: "line", data: [4, 3, 2, 1, 4, 3]},
+                    ]
+                }
+            ;
+            // 使用刚指定的配置项和数据显示图表。
+            myChart.setOption(option);
+            {#myChart.showLoading();#}
+
+        })
     </script>
-        <script>
+    <script>
         //执行一个laydate实例
         laydate.render({
             elem: '#date_time0',
@@ -208,5 +455,4 @@
             });
         };
     </script>
-    <script src="//webapi.amap.com/ui/1.0/main.js?v=1.0.11"></script>
 {% endblock %}

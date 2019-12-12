@@ -95,62 +95,80 @@
                             </tr>
                             </thead>
                             <tbody id="t_body">
-                            {% for d in data_info %}
-                                <tr>
-                                    <td>{{ d.device }}</td>
-                                    <td>{{ d.time }}</td>
-                                    <td>{{ d.speed }}</td>
-                                    <td>{{ d.direction }}</td>
-                                    <td>{{ d.level }}</td>
-                                    <td>{{ d.flow }}</td>
-                                    <td>{{ d.acreage }}</td>
-                                    <td>{{ d.power }}</td>
-                                    <td>查看详情</td>
-                                </tr>
-                            {% endfor %}
+                            {#                            {% for d in data_info %}#}
+                            {#                                <tr>#}
+                            {#                                    <td>{{ d.device }}</td>#}
+                            {#                                    <td>{{ d.time }}</td>#}
+                            {#                                    <td>{{ d.speed }}</td>#}
+                            {#                                    <td>{{ d.direction }}</td>#}
+                            {#                                    <td>{{ d.level }}</td>#}
+                            {#                                    <td>{{ d.flow }}</td>#}
+                            {#                                    <td>{{ d.acreage }}</td>#}
+                            {#                                    <td>{{ d.power }}</td>#}
+                            {#                                    <td>查看详情</td>#}
+                            {#                                </tr>#}
+                            {#                            {% endfor %}#}
                             <tr>
                                 <td>1号ADCP</td>
-                                <td>2019-12-6 17:20:00</td>
-                                <td>0.34</td>
-                                <td>24.76</td>
-                                <td>3.45</td>
+                                <td>2019-12-12 15:30:00</td>
+                                <td>0.64</td>
+                                <td>16.23</td>
+                                <td>3.03</td>
                                 <td></td>
                                 <td></td>
-                                <td>13.30</td>
-                                <td>查看详情</td>
+                                <td>14.39</td>
+                                <td>
+                                    <a href="{% url 'device_data' 1 %}" style="text-decoration:none">
+                                        <button type="button" class="btn btn-primary btn-sm" style="line-height: 1">
+                                            查看详情
+                                        </button>
+                                    </a>
+                                </td>
                             </tr>
                             <tr>
                                 <td>2号ADCP</td>
-                                <td>2019-12-6 17:20:00</td>
-                                <td>0.19</td>
-                                <td>39.65</td>
+                                <td>2019-12-12 15:35:00</td>
+                                <td>0.64</td>
+                                <td>31.69</td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
-                                <td>查看详情</td>
+                                <td>
+                                    <a href="{% url 'device_data' 2 %}" style="text-decoration:none">
+                                        <button type="button" class="btn btn-primary btn-sm" style="line-height: 1">
+                                            查看详情
+                                        </button>
+                                    </a>
+                                </td>
                             </tr>
                             <tr>
                                 <td>3号ADCP</td>
-                                <td>2019-12-6 17:20:00</td>
-                                <td>0.04</td>
-                                <td>90.31</td>
+                                <td>2019-12-12 15:40:00</td>
+                                <td>0.35</td>
+                                <td>76.46</td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
-                                <td>13.49</td>
-                                <td>查看详情</td>
+                                <td>14.22</td>
+                                <td>
+                                    <a href="{% url 'device_data' 3 %}" style="text-decoration:none">
+                                        <button type="button" class="btn btn-primary btn-sm" style="line-height: 1">
+                                            查看详情
+                                        </button>
+                                    </a>
+                                </td>
                             </tr>
                             <tr>
                                 <td>断面平均</td>
-                                <td>2019-12-6 17:30:00</td>
+                                <td>2019-12-12 15:40:00</td>
                                 <td></td>
                                 <td></td>
-                                <td>3.440</td>
+                                <td>2.990</td>
                                 <td></td>
                                 <td></td>
                                 <td></td>
-                                <td>查看详情</td>
+                                <td></td>
                             </tr>
 
 
@@ -162,7 +180,7 @@
         </div>
     </div>
     <div>
-        <img src="{% static 'images/ChartImg.png' %}" alt="">
+        <img src="{% static 'images/ChartImg (1).png' %}" alt="">
     </div>
 {% endblock %}
 
