@@ -219,7 +219,7 @@ class DeviceDataInfoView(LoginRequiredMixin, View):
     """
     查询单个设备所有数据
     """
-
+    # TODO 需要真实数据再进行组装数据给前端
     def get(self, request, device_id):
         permission = request.user.permission
         print(permission)
@@ -247,16 +247,29 @@ class DeviceDataInfoView(LoginRequiredMixin, View):
             adcp_level_data_info = adcp_level_data_infos.filter(
                 time__range=(adcp_data_info.time + timedelta(minutes=-10), adcp_data_info.time + timedelta(minutes=10))
             ).last()
-            data_dict['level'] = adcp_level_data_info.level
-            data_dict['power'] = adcp_level_data_info.power
+            if adcp_level_data_info:
+                data_dict['level'] = adcp_level_data_info.level
+                data_dict['power'] = adcp_level_data_info.power
+            else:
+                data_dict['level'] = ''
+                data_dict['power'] = ''
             data_info.append(data_dict)
         # print(data_info)
-        return render(request, 'device_data_info.html', {
-            "station_id": station_id,
-            "data_info": data_info,
-            "start_time": start_time,
-            "end_time": end_time,
-        })
+        device_type = device.device_type
+        if device_type == "走航式ADCP":
+            return render(request, 'device_data_info.html', {
+                "station_id": station_id,
+                "data_info": data_info,
+                "start_time": start_time,
+                "end_time": end_time,
+            })
+        if device_type == "水平式ADCP":
+            return render(request, 'device2_data_info.html', {
+                "station_id": station_id,
+                "data_info": data_info,
+                "start_time": start_time,
+                "end_time": end_time,
+            })
 
     def post(self, request, device_id):
         permission = request.user.permission
@@ -285,13 +298,26 @@ class DeviceDataInfoView(LoginRequiredMixin, View):
             adcp_level_data_info = adcp_level_data_infos.filter(
                 time__range=(adcp_data_info.time + timedelta(minutes=-10), adcp_data_info.time + timedelta(minutes=10))
             ).last()
-            data_dict['level'] = adcp_level_data_info.level
-            data_dict['power'] = adcp_level_data_info.power
+            if adcp_level_data_info:
+                data_dict['level'] = adcp_level_data_info.level
+                data_dict['power'] = adcp_level_data_info.power
+            else:
+                data_dict['level'] = ''
+                data_dict['power'] = ''
             data_info.append(data_dict)
         # print(data_info)
-        return render(request, 'device_data_info.html', {
-            "station_id": station_id,
-            "data_info": data_info,
-            "start_time": start_time,
-            "end_time": end_time,
-        })
+        device_type = device.device_type
+        if device_type == "走航式ADCP":
+            return render(request, 'device_data_info.html', {
+                "station_id": station_id,
+                "data_info": data_info,
+                "start_time": start_time,
+                "end_time": end_time,
+            })
+        if device_type == "水平式ADCP":
+            return render(request, 'device2_data_info.html', {
+                "station_id": station_id,
+                "data_info": data_info,
+                "start_time": start_time,
+                "end_time": end_time,
+            })
