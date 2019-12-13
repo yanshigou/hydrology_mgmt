@@ -1,0 +1,389 @@
+{% extends 'blank.html' %}
+{% load  staticfiles %}
+
+{% block title %}
+    设备数据
+{% endblock %}
+{% block topbar_title %}
+    设备数据
+{% endblock %}
+{% block other_css %}
+    <!-- Custom styles for this page -->
+    <link href="{% static 'vendor/datatables/dataTables.bootstrap4.min.css' %}" rel="stylesheet">
+    <link href="{% static 'css/bootstrap-select.min.css' %}" rel="stylesheet">
+    <style>
+        option:nth-child(1) {
+            display: none;
+        }
+    </style>
+    <style>
+        html, body, #container {
+            height: 100%;
+            width: 100%;
+        }
+
+        .input-card .btn {
+            margin-right: 1.2rem;
+            width: 9rem;
+        }
+
+        .input-card .btn-sm {
+            margin-right: 1.2rem;
+            width: 3.5rem;
+        }
+
+        .input-card .btn:last-child {
+            margin-right: 0;
+        }
+    </style>
+    <style>
+        body, td {
+            font-size: 12px !important
+        }
+
+        th, td {
+            white-space: normal;
+        }
+
+        thead > tr > th {
+            white-space: nowrap;
+        }
+
+        .btn {
+            white-space: nowrap;
+            line-height: 1;
+            font-size: 12px !important;
+        }
+    </style>
+{% endblock %}
+
+{% block head_scripts %}
+    <script src="{% static 'polyfill.js' %}"></script>
+    <script src="{% static 'cascader.js' %}"></script>
+    <script src="{% static 'echarts/dist/echarts.js' %}"></script>
+{% endblock %}
+
+{% block page_content %}
+    <div class="container-fluid" style="font-size:13px">
+        <ol class="breadcrumb">
+            <li class="breadcrumb-item"><a href="{% url 'index' %}">主页</a></li>
+            <li class="breadcrumb-item"><a href="{% url 'data_info' station_id %}">流量信息</a></li>
+            <li class="breadcrumb-item active">设备数据</li>
+        </ol>
+        <!-- Page Heading -->
+
+        <form action="" method="post" id="filterDataForm">
+            <p>
+                日期选项：
+                <input type="text" class="" id="date_time0" name="start_time" value="{{ start_time }}">
+                &nbsp;至 &nbsp;
+                <input type="text" class="" id="date_time1" name="end_time" value="{{ end_time }}">
+                &nbsp;
+            </p>
+
+            <p>
+                样本导航：
+                <select name="station_id" class="address selectpicker" id="station_id">
+                    {#                    {% for i in times %}#}
+                    {#                        <option value="{{ i.id }}">{{ i.station_name }}</option>#}
+                    {#                    {% endfor %}#}
+                    <option value="2019-12-12 15:00:00">2019-12-12 15:00:00</option>
+                    <option value="2019-12-12 15:10:00">2019-12-12 15:10:00</option>
+                    <option value="2019-12-12 15:20:00">2019-12-12 15:20:00</option>
+                    <option value="2019-12-12 15:30:00">2019-12-12 15:30:00</option>
+                    <option value="2019-12-12 15:40:00">2019-12-12 15:40:00</option>
+                    <option value="2019-12-12 15:50:00" selected>2019-12-12 15:50:00</option>
+                </select>
+            </p>
+
+            <p></p>
+            {% csrf_token %}
+            <p id="all_button">
+                <a>
+                    <button type="submit" class="btn btn-primary btn-sm">查询</button>
+                </a>
+                <a href="" style="text-decoration:none">
+                    <button type="button" class="btn btn-primary btn-sm">重置</button>
+                </a>
+            </p>
+        </form>
+        <strong>仪器名称：2号ADCP 仪器编号：60100002 仪器类型：水平式ADCP</strong>
+
+        <p></p>
+        <div id="div_content">
+            <!-- DataTales Example -->
+            <div class="card shadow mb-4">
+                <div class="alert" style="display: none;"></div>
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary"></h6>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-bordered table-hover" id="dataTable" width="100%" cellspacing="0">
+                            <thead class="thead-dark">
+                            <tr>
+                                <th>距离(m)</th>
+                                <th>流速(m/s)</th>
+                                <th>流向(° )</th>
+                            </tr>
+                            </thead>
+                            <tbody id="t_body">
+                            {#                            {% for d in data_info %}#}
+                            {#                                <tr>#}
+                            {#                                    <td>{{ d.device }}</td>#}
+                            {#                                    <td>{{ d.time }}</td>#}
+                            {#                                    <td>{{ d.speed }}</td>#}
+                            {#                                    <td>{{ d.direction }}</td>#}
+                            {#                                    <td>{{ d.level }}</td>#}
+                            {#                                    <td>{{ d.flow }}</td>#}
+                            {#                                    <td>{{ d.acreage }}</td>#}
+                            {#                                    <td>{{ d.power }}</td>#}
+                            {#                                    <td>查看详情</td>#}
+                            {#                                </tr>#}
+                            {#                            {% endfor %}#}
+                            <tr>
+                                <td>1</td>
+                                <td>0.33</td>
+                                <td>38.08</td>
+                            </tr>
+                            <tr>
+                                <td>3.5</td>
+                                <td>0.36</td>
+                                <td>38.29</td>
+                            </tr>
+                            <tr>
+                                <td>6</td>
+                                <td>0.37</td>
+                                <td>39.36</td>
+                            </tr>
+                            <tr>
+                                <td>8.5</td>
+                                <td>0.38</td>
+                                <td>38.70</td>
+                            </tr>
+                            <tr>
+                                <td>11</td>
+                                <td>0.37</td>
+                                <td>37.62</td>
+                            </tr>
+                            <tr>
+                                <td>xxx</td>
+                                <td>xxx</td>
+                                <td>xxx</td>
+                            </tr>
+                            <tr>
+                                <td>xxx</td>
+                                <td>xxx</td>
+                                <td>xxx</td>
+                            </tr>
+                            <tr>
+                                <td>xxx</td>
+                                <td>xxx</td>
+                                <td>xxx</td>
+                            </tr>
+                            <tr>
+                                <td>xxx</td>
+                                <td>xxx</td>
+                                <td>xxx</td>
+                            </tr>
+                            <tr>
+                                <td>xxx</td>
+                                <td>xxx</td>
+                                <td>xxx</td>
+                            </tr>
+                            <tr>
+                                <td>xxx</td>
+                                <td>xxx</td>
+                                <td>xxx</td>
+                            </tr>
+
+
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div id="main" style="width: 800px;height: 400px;"></div>
+    </div>
+{% endblock %}
+
+{% block other_js %}
+
+    <!-- Page level plugins -->
+    <script src="{% static 'vendor/datatables/jquery.dataTables.min.js' %}"></script>
+    <script src="{% static 'vendor/datatables/dataTables.bootstrap4.min.js' %}"></script>
+    <script src="{% static 'laydate/laydate.js' %}"></script>
+    <!-- Page level custom scripts -->
+    <script src="{% static 'js/demo/datatables-demo.js' %}"></script>
+    <script src="{% static 'js/bootstrap-select.min.js' %}"></script>
+    <script src="{% static 'js/defaults-zh_CN.min.js' %}"></script>
+
+    <script>
+        $(function () {
+            // 基于准备好的dom，初始化echarts实例
+            var myChart = echarts.init(document.getElementById('main'));
+            var option = {
+                    toolbox: {
+                        show: true,
+                        feature: {
+                            dataView: {//数据视图工具，可以展现当前图表所用的数据，编辑后可以动态更新。
+                                show: true,//是否显示组件。
+                                readOnly: false
+                            },
+                            magicType: {//动态类型切换 示例：feature: { magicType: {type: ['line', 'bar', 'stack', 'tiled']}}
+                                show: true,
+                                type: ['line', 'bar']
+                            },
+                            restore: {//配置项还原。
+                                show: true
+                            },
+                            saveAsImage: {
+                                show: true,
+                                excludeComponents:
+                                    ['toolbox'],
+                                title:
+                                    "导出",
+                                pixelRatio:
+                                    2
+                            }
+                        }
+                    },
+                    color: ["#000"],
+                    title:
+                        {
+                            text: ''
+                        }
+                    ,
+                    tooltip: {}
+                    ,
+                    legend: {
+                        data: ['流速']
+                    }
+                    ,
+                    grid: {
+                        //left: '10%',
+                        //bottom: '25%',
+                        //right: '1%'
+                        containLabel: true
+                    }
+                    ,
+                    xAxis:
+                        {
+                            boundaryGap: false,
+                            nameGap: 40,
+                            name: '距离（m）',
+                            nameLocation: "center",
+                            nameTextStyle: {
+                                color: "#000",
+                                //fontSize: 18,
+                                //fontFamily: "微软雅黑"
+                            },
+                            type: 'category',
+                            data: [0, 1, 3.5, 6, 8.5, 13.5, 16, 18.5, 21, 23.5, 26, 28.5, 31, 33.5, 36, 38.5, 41, 43.5, 46,
+                                48.5, 51, 53.5, 56, 58.5, 61, 63.5, 66, 68.5, 71, 73.5, 76, 78.5, 81, 83.5, 86, 88.5, 91,
+                                93.5, 96, 98.5, 101, 103.5, 106, 108.5, 111, 113.5, 116, 118.5],
+                            axisLabel: {
+                                interval: 5,
+                                rotate: 0,
+                                color: "#000",
+                                showMinLabel: true,
+                                showMaxLabel: true
+                            }
+                            ,
+                            axisTick: {
+                                alignWithLabel: true
+                            }
+                        }
+                    ,
+                    yAxis: {
+                        max: 4,
+                        mix: 0,
+                        maxInterval: 0.8,
+                        minInterval: 0.8,
+                        splitNumber: 5,
+                        boundaryGap: false,
+                        name: '流速（m/s）',
+                        nameLocation: "center",
+                        type: 'value',
+                        nameGap: 40,
+                        nameTextStyle: {
+                            fontSize: 14
+                        },
+                        //data: [0, 0.8, 1.6, 2.4, 3.2 ,4.0],
+                    },
+                    dataZoom: [],
+                    series:
+                        {
+                            name: "流速",
+                            type: "line",
+                            data: [0.33, 0.36, 0.37, 0.38, 0.37, 0.39, 0.42, 0.43, 0.43, 0.44, 0.43, 0.46, 0.48, 0.50,
+                                0.51, 0.50, 0.52, 0.53, 0.54, 0.55, 0.55, 0.57, 0.58, 0.58, 0.59, 0.61, 0.61, 0.62, 0.63,
+                                0.64, 0.64, 0.63, 0.64, 0.65, 0.65, 0.67, 0.68, 0.69, 0.70, 0.70, 0.70, 0.71, 0.72, 0.72,
+                                0.72, 0.71, 0.71, 0.70]
+                        }
+
+                }
+            ;
+            // 使用刚指定的配置项和数据显示图表。
+            //myChart.showLoading();
+            myChart.setOption(option);
+
+        })
+    </script>
+    <script>
+        //执行一个laydate实例
+        laydate.render({
+            elem: '#date_time0',
+            type: 'datetime'
+        });
+        laydate.render({
+            elem: '#date_time1',
+            type: 'datetime'
+        });
+    </script>
+    <script>
+        $(function () {
+            reloadDatatables();
+            {#total_nums();#}
+        });
+        var reloadDatatables = function () {
+            {#console.log('触发了');#}
+            var tables = $('#dataTable').DataTable({
+                select: 'single',
+                destroy: true,
+                'bAutoWidth': false,
+                "pagingType": "full_numbers",
+                "language": {
+                    "decimal": "",
+                    "info": "",
+                    "infoEmpty": "没有数据",
+                    "emptyTable": "没有数据",
+                    "infoFiltered": "(从总数 _MAX_ 条中 过滤)",
+                    "infoPostFix": "",
+                    "thousands": ",",
+                    "lengthMenu": "每页显示 _MENU_ 条数据",
+                    "loadingRecords": "加载中...",
+                    "processing": "处理中...",
+                    "search": "搜索:",
+                    "zeroRecords": "没有搜索到数据",
+                    "paginate": {
+                        "first": "第一页",
+                        "last": "最后一页",
+                        "next": "下一页",
+                        "previous": "上一页"
+                    },
+                    "aria": {
+                        "sortAscending": ": 点击以按升序排序",
+                        "sortDescending": ": 点击以按降序排序"
+                    }
+                },
+                "autoWidth": false,	//禁用自动调整列宽
+                "processing": true,//载入数据的时候是否显示“载入中”
+                "searching": false,//去掉搜索框
+                "deferRender": true,
+                //'paging': false,  //关闭分页
+            });
+        };
+    </script>
+{% endblock %}
