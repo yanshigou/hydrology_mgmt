@@ -60,7 +60,7 @@
 {% block head_scripts %}
     <script src="{% static 'polyfill.js' %}"></script>
     <script src="{% static 'cascader.js' %}"></script>
-
+    <script src="{% static 'echarts/dist/echarts.js' %}"></script>
 {% endblock %}
 
 {% block page_content %}
@@ -179,9 +179,10 @@
             </div>
         </div>
     </div>
-    <div>
-        <img src="{% static 'images/ChartImg (1).png' %}" alt="">
-    </div>
+    {#    <div>#}
+    {#        <img src="{% static 'images/ChartImg (1).png' %}" alt="">#}
+    {#    </div>#}
+    <div id="main" style="width: 800px;height: 400px;"></div>
 {% endblock %}
 
 {% block other_js %}
@@ -194,8 +195,6 @@
     <script src="{% static 'js/demo/datatables-demo.js' %}"></script>
     <script src="{% static 'js/bootstrap-select.min.js' %}"></script>
     <script src="{% static 'js/defaults-zh_CN.min.js' %}"></script>
-    <script type="text/javascript" src="https://webapi.amap.com/maps?v=1.4.13&key=5cda232d2d1f782a634096167304eb59">
-    </script>
     <script>
         $(function () {
             reloadDatatables();
@@ -240,5 +239,143 @@
             });
         };
     </script>
-    <script src="//webapi.amap.com/ui/1.0/main.js?v=1.0.11"></script>
+    <script>
+        $(function () {
+            // 基于准备好的dom，初始化echarts实例
+            var myChart = echarts.init(document.getElementById('main'));
+            var option = {
+                    toolbox: {
+                        show: true,
+                        feature: {
+                            saveAsImage: {
+                                show: true,
+                                excludeComponents:
+                                    ['toolbox'],
+                                title:
+                                    "导出",
+                                pixelRatio:
+                                    2
+                            }
+                        }
+                    },
+                    color: ["#032ddc", "#671500"],
+                    title:
+                        {
+                            text: ''
+                        }
+                    ,
+                    tooltip: {}
+                    ,
+                    legend: {
+                        data: ['流量', '水位']
+                    }
+                    ,
+                    grid: {
+                        //left: '10%',
+                        //bottom: '25%',
+                        //right: '1%'
+                        containLabel: true
+                    }
+                    ,
+                    xAxis:
+                        {
+                            //网格样式
+                            splitLine: {
+                                show: true,
+                                lineStyle: {
+                                    width: 1,
+                                    type: 'dashed'
+                                }
+                            },
+                            boundaryGap: false,
+                            nameGap: 20,
+                            name: '时间',
+                            nameLocation: "center",
+                            nameTextStyle: {
+                                color: "#000",
+                                //fontSize: 18,
+                                //fontFamily: "微软雅黑"
+                            },
+                            type: 'category',
+                            data: ["12-15 00:00", "12-15 06:00", "12-15 12:00", "12-15 18:00"],
+                            axisLabel: {
+                                color: "#000",
+                                {#showMinLabel: true,#}
+                                {#showMaxLabel: true#}
+                            }
+                            ,
+                            axisTick: {
+                                alignWithLabel: true
+                            }
+                        }
+                    ,
+                    yAxis: [
+                        {
+                            //网格样式
+                            splitLine: {
+                                show: true,
+                                lineStyle: {
+                                    width: 1,
+                                    type: 'dashed'
+                                }
+                            },
+                            splitNumber: 5,
+                            boundaryGap: false,
+                            name: '水位（m）',
+                            nameLocation: "center",
+                            type: 'value',
+                            nameGap: 30,
+                            nameTextStyle: {
+                                fontSize: 14
+                            },
+                            //data: [0, 0.8, 1.6, 2.4, 3.2 ,4.0],
+                        },
+                        {
+                            //网格样式
+                            splitLine: {
+                                show: true,
+                                lineStyle: {
+                                    width: 1,
+                                    type: 'dashed'
+                                }
+                            },
+                            splitNumber: 5,
+                            boundaryGap: false,
+                            name: '流量（m³/s）',
+                            nameLocation: "center",
+                            position: "right",
+                            type: 'value',
+                            nameGap: 60,
+                            nameTextStyle: {
+                                fontSize: 14
+                            },
+                            //data: [0, 0.8, 1.6, 2.4, 3.2 ,4.0],
+                        }
+                    ],
+                    dataZoom: [],
+                    series:
+                        [
+                            {
+                                yAxisIndex: 1,
+                                name: "流量",
+                                type: "line",
+                                data: ["0", "15000", "9000", "17000"]
+                            },
+                            {
+                                yAxisIndex: 0,
+                                name: "水位",
+                                type: "line",
+                                data: ["4.2", "3.2", "4.0", "3.1"]
+                            },
+                        ]
+
+
+                }
+            ;
+            // 使用刚指定的配置项和数据显示图表。
+            //myChart.showLoading();
+            myChart.setOption(option);
+
+        })
+    </script>
 {% endblock %}
