@@ -21,7 +21,7 @@ class ADCPDataInfoView(LoginRequiredMixin, View):
         if permission == 'superadmin':
             devices = DevicesInfo.objects.all()
             stations = StationInfo.objects.all()
-            return render(request, 'adcp_paginator.html', {
+            return render(request, 'adcp_paginator2.html', {
                 "start_time": start_time,
                 "end_time": end_time,
                 "devices": devices,
@@ -32,7 +32,7 @@ class ADCPDataInfoView(LoginRequiredMixin, View):
             devices = DevicesInfo.objects.filter(station__company_id=company_id)
             stations = StationInfo.objects.filter(company_id=company_id)
             create_history_record(request.user, "查询水量数据")
-            return render(request, 'adcp_paginator.html', {
+            return render(request, 'adcp_paginator2.html', {
                 "start_time": start_time,
                 "end_time": end_time,
                 "devices": devices,
@@ -50,13 +50,32 @@ class ADCPDataInfoView(LoginRequiredMixin, View):
         length = request.POST.get('length', "10")
         page = request.POST.get('page', "1")
         print(draw, start, length, page)
+        print(device_id)
+        data = []
         if device_id == "0":
             # TODO 计算断面平均，所有设备数据平均
             data_infos = ADCPDataInfo.objects.filter(time__gte=start_time, time__lte=end_time,
                                                      device__station=station_id).order_by('-time')
+
+            data.append({
+                "time": "2019-12-17 16:35:00",
+                "flow": "18127",
+                "area": "28862",
+                "avg_speed": "0.63",
+                "avg_direction": "12.26",
+                "level": "3.26"
+            })
         else:
             data_infos = ADCPDataInfo.objects.filter(device_id=device_id, time__gte=start_time, time__lte=end_time,
                                                      device__station=station_id).order_by('-time')
+            data.append({
+                "time": "2019-12-17 15:50:00",
+                "flow": "",
+                "area": "",
+                "avg_speed": "0.60",
+                "avg_direction": "15.30",
+                "level": "3.34"
+            })
         print(data_infos.values())
         page2 = request.POST.get('page', '1')
         # print(len(all_wt_data))
@@ -68,18 +87,20 @@ class ADCPDataInfoView(LoginRequiredMixin, View):
         except EmptyPage:
             data_page = paginator.page(paginator.num_pages)
         print(data_page)
-        data = []
-        for i in data_page:
-            # TODO 每个时间点多条数据，需计算平均值
-            time = i.time
-            if time:
-                time = datetime.strftime(time, "%Y-%m-%d %H:%M:%S")
-            data.append({
-                "time": time,
-                "speed": i.speed,
-                "direction": i.direction,
-                "level": ""
-            })
+        # data = []
+        # for i in data_page:
+        #     # TODO 每个时间点多条数据，需计算平均值
+        #     time = i.time
+        #     if time:
+        #         time = datetime.strftime(time, "%Y-%m-%d %H:%M:%S")
+        #     data.append({
+        #         "time": time,
+        #         "flow": "",
+        #         "area": "",
+        #         "avg_speed": i.speed,
+        #         "avg_direction": i.direction,
+        #         "level": ""
+        #     })
         return JsonResponse({
             "draw": draw,
             "recordsTotal": data_infos.count(),

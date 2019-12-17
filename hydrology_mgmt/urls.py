@@ -23,6 +23,9 @@ urlpatterns = [
     url(r'^$', Index.as_view(), name='index'),
     url(r'^admin/', admin.site.urls),
     url(r'^users/', include('users.urls')),
+    url(r'^station/', include('station.urls')),
+    url(r'^devices/', include('devices.urls')),
+    url(r'^dataInfo/', include('datainfo.urls')),
     url(r'^media/(?P<path>.*)$', serve, {'document_root': MEDIA_ROOT}),
     # url(r'^static/(?P<path>.*)$', serve, {'document_root': STATIC_ROOT}),
 ]
