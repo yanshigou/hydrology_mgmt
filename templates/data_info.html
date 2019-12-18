@@ -67,10 +67,12 @@
     <div class="container-fluid" style="font-size:13px">
         <ol class="breadcrumb">
             <li class="breadcrumb-item"><a href="{% url 'index' %}">主页</a></li>
-            <li class="breadcrumb-item active">流量信息</li>
+            <li class="breadcrumb-item"><a href="{% url 'data_info_station' %}">流量信息</a></li>
+            <li class="breadcrumb-item active">测站点流量信息</li>
         </ol>
         <!-- Page Heading -->
-
+        <strong style="font-size: 15px; color: black">站名：{{ station_name }}</strong>
+        <p></p>
         <div id="div_content">
             <!-- DataTales Example -->
             <div class="card shadow mb-4">
@@ -95,70 +97,28 @@
                             </tr>
                             </thead>
                             <tbody id="t_body">
-                            {#                            {% for d in data_info %}#}
-                            {#                                <tr>#}
-                            {#                                    <td>{{ d.device }}</td>#}
-                            {#                                    <td>{{ d.time }}</td>#}
-                            {#                                    <td>{{ d.speed }}</td>#}
-                            {#                                    <td>{{ d.direction }}</td>#}
-                            {#                                    <td>{{ d.level }}</td>#}
-                            {#                                    <td>{{ d.flow }}</td>#}
-                            {#                                    <td>{{ d.acreage }}</td>#}
-                            {#                                    <td>{{ d.power }}</td>#}
-                            {#                                    <td>查看详情</td>#}
-                            {#                                </tr>#}
-                            {#                            {% endfor %}#}
-                            <tr>
-                                <td>1号ADCP</td>
-                                <td>2019-12-12 15:30:00</td>
-                                <td>0.64</td>
-                                <td>16.23</td>
-                                <td>3.03</td>
-                                <td></td>
-                                <td></td>
-                                <td>14.39</td>
-                                <td>
-                                    <a href="{% url 'device_data' 1 %}" style="text-decoration:none">
-                                        <button type="button" class="btn btn-primary btn-sm" style="line-height: 1">
-                                            查看详情
-                                        </button>
-                                    </a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>2号ADCP</td>
-                                <td>2019-12-12 15:35:00</td>
-                                <td>0.64</td>
-                                <td>31.69</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td>
-                                    <a href="{% url 'device_data' 2 %}" style="text-decoration:none">
-                                        <button type="button" class="btn btn-primary btn-sm" style="line-height: 1">
-                                            查看详情
-                                        </button>
-                                    </a>
-                                </td>
-                            </tr>
-                            <tr>
-                                <td>3号ADCP</td>
-                                <td>2019-12-12 15:40:00</td>
-                                <td>0.35</td>
-                                <td>76.46</td>
-                                <td></td>
-                                <td></td>
-                                <td></td>
-                                <td>14.22</td>
-                                <td>
-                                    <a href="{% url 'device_data' 3 %}" style="text-decoration:none">
-                                        <button type="button" class="btn btn-primary btn-sm" style="line-height: 1">
-                                            查看详情
-                                        </button>
-                                    </a>
-                                </td>
-                            </tr>
+                            {% for d in data_info %}
+                                <tr>
+                                    <td>{{ d.device }}</td>
+                                    <td>{{ d.time }}</td>
+                                    <td>{{ d.avg_speed }}</td>
+                                    <td>{{ d.avg_direction }}</td>
+                                    <td>{{ d.level }}</td>
+                                    <td>{{ d.flow }}</td>
+                                    <td>{{ d.acreage }}</td>
+                                    <td>{{ d.power }}</td>
+                                    {% if d.id %}
+                                    <td>
+                                        <a href="{% url 'device_data' d.id %}" style="text-decoration:none">
+                                            <button type="button" class="btn btn-primary btn-sm" style="line-height: 1">
+                                                查看详情
+                                            </button>
+                                        </a>
+                                    </td>
+                                    {% endif %}
+                                </tr>
+                            {% endfor %}
+                            {% if data_info %}
                             <tr>
                                 <td>断面平均</td>
                                 <td>2019-12-12 15:40:00</td>
@@ -170,6 +130,69 @@
                                 <td></td>
                                 <td></td>
                             </tr>
+                            {% endif %}
+{#                            <tr>#}
+{#                                <td>1号ADCP</td>#}
+{#                                <td>2019-12-12 15:30:00</td>#}
+{#                                <td>0.64</td>#}
+{#                                <td>16.23</td>#}
+{#                                <td>3.03</td>#}
+{#                                <td></td>#}
+{#                                <td></td>#}
+{#                                <td>14.39</td>#}
+{#                                <td>#}
+{#                                    <a href="{% url 'device_data' 1 %}" style="text-decoration:none">#}
+{#                                        <button type="button" class="btn btn-primary btn-sm" style="line-height: 1">#}
+{#                                            查看详情#}
+{#                                        </button>#}
+{#                                    </a>#}
+{#                                </td>#}
+{#                            </tr>#}
+{#                            <tr>#}
+{#                                <td>2号ADCP</td>#}
+{#                                <td>2019-12-12 15:35:00</td>#}
+{#                                <td>0.64</td>#}
+{#                                <td>31.69</td>#}
+{#                                <td></td>#}
+{#                                <td></td>#}
+{#                                <td></td>#}
+{#                                <td></td>#}
+{#                                <td>#}
+{#                                    <a href="{% url 'device_data' 2 %}" style="text-decoration:none">#}
+{#                                        <button type="button" class="btn btn-primary btn-sm" style="line-height: 1">#}
+{#                                            查看详情#}
+{#                                        </button>#}
+{#                                    </a>#}
+{#                                </td>#}
+{#                            </tr>#}
+{#                            <tr>#}
+{#                                <td>3号ADCP</td>#}
+{#                                <td>2019-12-12 15:40:00</td>#}
+{#                                <td>0.35</td>#}
+{#                                <td>76.46</td>#}
+{#                                <td></td>#}
+{#                                <td></td>#}
+{#                                <td></td>#}
+{#                                <td>14.22</td>#}
+{#                                <td>#}
+{#                                    <a href="{% url 'device_data' 3 %}" style="text-decoration:none">#}
+{#                                        <button type="button" class="btn btn-primary btn-sm" style="line-height: 1">#}
+{#                                            查看详情#}
+{#                                        </button>#}
+{#                                    </a>#}
+{#                                </td>#}
+{#                            </tr>#}
+{#                            <tr>#}
+{#                                <td>断面平均</td>#}
+{#                                <td>2019-12-12 15:40:00</td>#}
+{#                                <td></td>#}
+{#                                <td></td>#}
+{#                                <td>2.990</td>#}
+{#                                <td></td>#}
+{#                                <td></td>#}
+{#                                <td></td>#}
+{#                                <td></td>#}
+{#                            </tr>#}
 
 
                             </tbody>
@@ -182,7 +205,9 @@
     {#    <div>#}
     {#        <img src="{% static 'images/ChartImg (1).png' %}" alt="">#}
     {#    </div>#}
+    {% if data_info %}
     <div id="main" style="width: 1200px;height: 400px;margin: 0 auto;"></div>
+    {% endif %}
 {% endblock %}
 
 {% block other_js %}
@@ -231,6 +256,7 @@
                         "sortDescending": ": 点击以按降序排序"
                     }
                 },
+                'ordering': false,
                 "autoWidth": false,	//禁用自动调整列宽
                 "processing": true,//载入数据的时候是否显示“载入中”
                 "searching": false,//去掉搜索框
