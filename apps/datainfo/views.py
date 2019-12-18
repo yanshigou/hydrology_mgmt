@@ -136,32 +136,51 @@ class DataInfoView(LoginRequiredMixin, View):
     """
     流量信息展示，汇总各种表数据
     """
+    # TODO 断面平均计算 流量水位图的数据
     def get(self, request, station_id):
         permission = request.user.permission
         print(permission)
         if permission == 'superadmin':
-            devices = DevicesInfo.objects.all()
+            devices = DevicesInfo.objects.filter(station_id=station_id)
         else:
             company_id = request.user.company.id
             devices = DevicesInfo.objects.filter(station__company_id=company_id, station_id=station_id)
         data_info = list()
+        station_name = StationInfo.objects.get(id=station_id).station_name
         for device in devices:
             data_dict = dict()
             adcp_data_info = ADCPDataInfo.objects.filter(device_id=device.id).last()
-            adcp_level_data_info = ADCPLevelDataInfo.objects.filter(device_id=device.id).last()
             data_dict['device'] = device.name
+            data_dict['id'] = device.id
             if adcp_data_info:
-                data_dict['time'] = datetime.strftime(adcp_data_info.time, "%Y-%m-%d %H:%M:%S")
-                data_dict['speed'] = adcp_data_info.speed
-                data_dict['direction'] = adcp_data_info.direction
-                data_dict['depth'] = adcp_data_info.depth
-                data_dict['distance'] = adcp_data_info.distance
-            if adcp_level_data_info:
-                data_dict['level'] = adcp_level_data_info.level
-                data_dict['power'] = adcp_level_data_info.power
-            print(data_dict)
+                a_last_time = adcp_data_info.time
+                adcp_data_info = ADCPDataInfo.objects.filter(device_id=device.id, time=a_last_time)
+                speed_list = list()
+                direction_list = list()
+                for data in adcp_data_info:
+                    speed_list.append(float(data.speed))
+                    direction_list.append(float(data.direction))
+                avg_speed = "%.2f" % (sum(speed_list)/len(speed_list))
+                avg_direction = "%.2f" % (sum(direction_list)/len(direction_list))
+                data_dict['time'] = a_last_time
+                data_dict['avg_speed'] = avg_speed
+                data_dict['avg_direction'] = avg_direction
+                adcp_level_data_info = ADCPLevelDataInfo.objects.filter(
+                    time__range=(
+                        a_last_time + timedelta(minutes=-10), a_last_time + timedelta(minutes=10))
+                ).last()
+
+                if adcp_level_data_info:
+                    data_dict['level'] = adcp_level_data_info.level
+                    data_dict['power'] = adcp_level_data_info.power
+                else:
+                    data_dict['level'] = ''
+                    data_dict['power'] = ''
+
+            # print(data_dict)
             data_info.append(data_dict)
         print(data_info)
         return render(request, 'data_info.html', {
-            # "data_info": data_info,
+            "data_info": data_info,
+            "station_name": station_name,
         })
