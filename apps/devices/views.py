@@ -219,12 +219,16 @@ class DeviceDataInfoView(LoginRequiredMixin, View):
     """
     查询单个设备所有数据
     """
-    # TODO 需要真实数据再进行组装数据给前端
+
     def get(self, request, device_id):
         permission = request.user.permission
-        print(permission)
-        end_time = datetime.now()
-        start_time = end_time + timedelta(days=-3)
+        # print(permission)
+        end_time = datetime.strptime(datetime.strftime(datetime.now(), "%Y-%m-%d %H:%M")[:-1] + "0:00",
+                                     "%Y-%m-%d %H:%M:%S")
+        start_time = end_time + timedelta(days=-1)
+        time_list = list()
+        time = start_time
+
         if permission == 'superadmin':
             device = DevicesInfo.objects.get(id=device_id)
         else:
@@ -232,39 +236,76 @@ class DeviceDataInfoView(LoginRequiredMixin, View):
             device = DevicesInfo.objects.get(station__company_id=company_id, id=device_id)
         station_id = device.station_id
         data_info = list()
-
-        adcp_data_infos = ADCPDataInfo.objects.filter(device_id=device.id, time__range=(start_time, end_time))
-        adcp_level_data_infos = ADCPLevelDataInfo.objects.filter(device_id=device.id, time__range=(start_time, end_time))
-
-        for adcp_data_info in adcp_data_infos:
-            data_dict = dict()
-            data_dict['device'] = device.name
-            data_dict['time'] = datetime.strftime(adcp_data_info.time, "%Y-%m-%d %H:%M:%S")
-            data_dict['speed'] = adcp_data_info.speed
-            data_dict['direction'] = adcp_data_info.direction
-            data_dict['depth'] = adcp_data_info.depth
-            data_dict['distance'] = adcp_data_info.distance
-            adcp_level_data_info = adcp_level_data_infos.filter(
-                time__range=(adcp_data_info.time + timedelta(minutes=-10), adcp_data_info.time + timedelta(minutes=10))
-            ).last()
-            if adcp_level_data_info:
-                data_dict['level'] = adcp_level_data_info.level
-                data_dict['power'] = adcp_level_data_info.power
-            else:
-                data_dict['level'] = ''
-                data_dict['power'] = ''
-            data_info.append(data_dict)
-        # print(data_info)
         device_type = device.device_type
         if device_type == "走航式ADCP":
+            while True:
+                time_list.append(time)
+                time = time + timedelta(minutes=10)
+                # print(time)
+                if time > end_time:
+                    break
+        if device_type == "水平式ADCP":
+            while True:
+                time_list.append(time)
+                time = time + timedelta(minutes=5)
+                # print(time)
+                if time > end_time:
+                    break
+        # print(time_list)
+        last_time = time_list[-1]
+        # print(last_time)
+
+        adcp_data_infos = ADCPDataInfo.objects.filter(device_id=device.id, time=last_time)
+        # print(adcp_data_infos)
+
+        if device_type == "走航式ADCP":
+            depth_list = list()
+            speed_list = list()
+            direction_list = list()
+            for adcp_data_info in adcp_data_infos:
+                data_dict = dict()
+                data_dict['speed'] = adcp_data_info.speed
+                data_dict['direction'] = adcp_data_info.direction
+                data_dict['depth'] = adcp_data_info.depth
+                data_info.append(data_dict)
+                depth_list.append(adcp_data_info.depth)
+                speed_list.append(adcp_data_info.speed)
+                direction_list.append(adcp_data_info.direction)
+            # print(data_info)
+
             return render(request, 'device_data_info.html', {
+                "device": device,
+                "time_list": time_list,
+                "last_time": last_time,
+                "depth_list": depth_list,
+                "speed_list": speed_list,
+                "direction_list": direction_list,
                 "station_id": station_id,
                 "data_info": data_info,
                 "start_time": start_time,
                 "end_time": end_time,
             })
         if device_type == "水平式ADCP":
+            distance_list = list()
+            speed_list = list()
+            direction_list = list()
+            for adcp_data_info in adcp_data_infos:
+                data_dict = dict()
+                data_dict['speed'] = adcp_data_info.speed
+                data_dict['direction'] = adcp_data_info.direction
+                data_dict['distance'] = adcp_data_info.distance
+                data_info.append(data_dict)
+                distance_list.append(adcp_data_info.distance)
+                speed_list.append(adcp_data_info.speed)
+                direction_list.append(adcp_data_info.direction)
+            # print(data_info)
             return render(request, 'device2_data_info.html', {
+                "device": device,
+                "time_list": time_list,
+                "last_time": last_time,
+                "distance_list": distance_list,
+                "speed_list": speed_list,
+                "direction_list": direction_list,
                 "station_id": station_id,
                 "data_info": data_info,
                 "start_time": start_time,
@@ -273,9 +314,13 @@ class DeviceDataInfoView(LoginRequiredMixin, View):
 
     def post(self, request, device_id):
         permission = request.user.permission
-        print(permission)
+        # print(permission)
         end_time = request.POST.get("end_time")
         start_time = request.POST.get("start_time")
+        end_time = datetime.strptime(end_time[:-4] + "0:00", "%Y-%m-%d %H:%M:%S")
+        start_time = datetime.strptime(start_time[:-4] + "0:00", "%Y-%m-%d %H:%M:%S")
+        time_list = list()
+        time = start_time
         if permission == 'superadmin':
             device = DevicesInfo.objects.get(id=device_id)
         else:
@@ -283,39 +328,76 @@ class DeviceDataInfoView(LoginRequiredMixin, View):
             device = DevicesInfo.objects.get(station__company_id=company_id, id=device_id)
         station_id = device.station_id
         data_info = list()
-
-        adcp_data_infos = ADCPDataInfo.objects.filter(device_id=device.id, time__range=(start_time, end_time))
-        adcp_level_data_infos = ADCPLevelDataInfo.objects.filter(device_id=device.id, time__range=(start_time, end_time))
-
-        for adcp_data_info in adcp_data_infos:
-            data_dict = dict()
-            data_dict['device'] = device.name
-            data_dict['time'] = datetime.strftime(adcp_data_info.time, "%Y-%m-%d %H:%M:%S")
-            data_dict['speed'] = adcp_data_info.speed
-            data_dict['direction'] = adcp_data_info.direction
-            data_dict['depth'] = adcp_data_info.depth
-            data_dict['distance'] = adcp_data_info.distance
-            adcp_level_data_info = adcp_level_data_infos.filter(
-                time__range=(adcp_data_info.time + timedelta(minutes=-10), adcp_data_info.time + timedelta(minutes=10))
-            ).last()
-            if adcp_level_data_info:
-                data_dict['level'] = adcp_level_data_info.level
-                data_dict['power'] = adcp_level_data_info.power
-            else:
-                data_dict['level'] = ''
-                data_dict['power'] = ''
-            data_info.append(data_dict)
-        # print(data_info)
         device_type = device.device_type
+
         if device_type == "走航式ADCP":
+            while True:
+                time_list.append(time)
+                time = time + timedelta(minutes=10)
+                # print(time)
+                if time > end_time:
+                    break
+        if device_type == "水平式ADCP":
+            while True:
+                time_list.append(time)
+                time = time + timedelta(minutes=5)
+                # print(time)
+                if time > end_time:
+                    break
+        # print(time_list)
+        # last_time = time_list[-1]
+        # print(last_time)
+
+        time = request.POST.get("time")
+        # print(time)
+        adcp_data_infos = ADCPDataInfo.objects.filter(device_id=device.id, time=time)
+        if device_type == "走航式ADCP":
+            depth_list = list()
+            speed_list = list()
+            direction_list = list()
+            for adcp_data_info in adcp_data_infos:
+                data_dict = dict()
+                data_dict['speed'] = adcp_data_info.speed
+                data_dict['direction'] = adcp_data_info.direction
+                data_dict['depth'] = adcp_data_info.depth
+                data_info.append(data_dict)
+                depth_list.append(adcp_data_info.depth)
+                speed_list.append(adcp_data_info.speed)
+                direction_list.append(adcp_data_info.direction)
+            # print(data_info)
             return render(request, 'device_data_info.html', {
+                "device": device,
+                "time_list": time_list,
+                "last_time": datetime.strptime(time, "%Y-%m-%d %H:%M:%S"),
+                "depth_list": depth_list,
+                "speed_list": speed_list,
+                "direction_list": direction_list,
                 "station_id": station_id,
                 "data_info": data_info,
                 "start_time": start_time,
                 "end_time": end_time,
             })
         if device_type == "水平式ADCP":
+            distance_list = list()
+            speed_list = list()
+            direction_list = list()
+            for adcp_data_info in adcp_data_infos:
+                data_dict = dict()
+                data_dict['speed'] = adcp_data_info.speed
+                data_dict['direction'] = adcp_data_info.direction
+                data_dict['distance'] = adcp_data_info.distance
+                data_info.append(data_dict)
+                distance_list.append(adcp_data_info.distance)
+                speed_list.append(adcp_data_info.speed)
+                direction_list.append(adcp_data_info.direction)
+            # print(data_info)
             return render(request, 'device2_data_info.html', {
+                "device": device,
+                "time_list": time_list,
+                "last_time": datetime.strptime(time, "%Y-%m-%d %H:%M:%S"),
+                "distance_list": distance_list,
+                "speed_list": speed_list,
+                "direction_list": direction_list,
                 "station_id": station_id,
                 "data_info": data_info,
                 "start_time": start_time,
