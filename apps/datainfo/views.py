@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.views import View
 from django.http import HttpResponseRedirect, JsonResponse
 from django.core.urlresolvers import reverse
-
+from django.db import connection
 from .models import ADCPDataInfo, ADCPLevelDataInfo
 from devices.models import DevicesInfo
 from station.models import StationInfo
@@ -51,35 +51,81 @@ class ADCPDataInfoView(LoginRequiredMixin, View):
         page = request.POST.get('page', "1")
         print(draw, start, length, page)
         print(device_id)
-        data = []
+        data_list = []
         if device_id == "0":
             # TODO 计算断面平均，所有设备数据平均
-            data_infos = ADCPDataInfo.objects.filter(time__gte=start_time, time__lte=end_time,
-                                                     device__station=station_id).order_by('-time')
-
-            data.append({
-                "time": "2019-12-17 16:35:00",
-                "flow": "18127",
-                "area": "28862",
-                "avg_speed": "0.63",
-                "avg_direction": "12.26",
-                "level": "3.26"
-            })
+            sql = "SELECT adcpinfo.time, AVG(adcpinfo.speed) as avg_speed, AVG(adcpinfo.direction) as avg_direction " \
+                  "from (SELECT datainfo_adcpdatainfo.time, datainfo_adcpdatainfo.speed, datainfo_adcpdatainfo.depth, " \
+                  "datainfo_adcpdatainfo.direction, datainfo_adcpdatainfo.distance FROM datainfo_adcpdatainfo " \
+                  "WHERE  datainfo_adcpdatainfo.time >= \'{start_time}\' " \
+                  "AND datainfo_adcpdatainfo.time <= \'{end_time}\' ) adcpinfo  " \
+                  "RIGHT JOIN (SELECT station_id FROM devices_devicesinfo) deviceinfo on " \
+                  "deviceinfo.station_id=\'{station_id}\'" \
+                  "GROUP BY adcpinfo.time ORDER BY adcpinfo.time"
+            with connection.cursor() as cursor:
+                cursor.execute(sql.format(device_id=device_id, start_time=start_time, end_time=end_time, station_id=station_id))
+                all_data = cursor.fetchall()
+                # print(all_data)
+                for data in all_data:
+                    time, avg_speed, avg_direction = data
+                    if time and avg_speed and avg_direction:
+                        print(time, avg_speed, avg_direction)
+                        level_data = ADCPLevelDataInfo.objects.order_by('time')
+                        level_data2 = level_data.filter(
+                            time__range=(time + timedelta(minutes=-10), time + timedelta(minutes=10))).last()
+                        if level_data2:
+                            level = level_data2.level
+                        elif not level_data2 and level_data:
+                            level = level_data.last().level
+                        else:
+                            level = ""
+                        print(level)
+                        data_list.append({
+                            "time": datetime.strftime(time, "%Y-%m-%d %H:%M:%S"),
+                            "flow": "未算",
+                            "area": "未算",
+                            "avg_speed": "%.2f" % avg_speed,
+                            "avg_direction": "%.2f" % avg_direction,
+                            "level": level
+                        })
+            print(data_list)
         else:
-            data_infos = ADCPDataInfo.objects.filter(device_id=device_id, time__gte=start_time, time__lte=end_time,
-                                                     device__station=station_id).order_by('-time')
-            data.append({
-                "time": "2019-12-17 15:50:00",
-                "flow": "",
-                "area": "",
-                "avg_speed": "0.60",
-                "avg_direction": "15.30",
-                "level": "3.34"
-            })
-        print(data_infos.values())
+            sql = "SELECT adcpinfo.time, AVG(adcpinfo.speed) as avg_speed, AVG(adcpinfo.direction) as avg_direction " \
+                  "from (SELECT datainfo_adcpdatainfo.time, datainfo_adcpdatainfo.speed, datainfo_adcpdatainfo.depth, " \
+                  "datainfo_adcpdatainfo.direction, datainfo_adcpdatainfo.distance FROM datainfo_adcpdatainfo " \
+                  "WHERE device_id=\'{device_id}\' AND datainfo_adcpdatainfo.time >= \'{start_time}\' " \
+                  "AND datainfo_adcpdatainfo.time <= \'{end_time}\' ) adcpinfo  " \
+                  "RIGHT JOIN (SELECT station_id FROM devices_devicesinfo) deviceinfo on " \
+                  "deviceinfo.station_id=\'{station_id}\'" \
+                  "GROUP BY adcpinfo.time ORDER BY adcpinfo.time"
+            with connection.cursor() as cursor:
+                cursor.execute(sql.format(device_id=device_id, start_time=start_time, end_time=end_time, station_id=station_id))
+                all_data = cursor.fetchall()
+                # print(all_data)
+                for data in all_data:
+                    time, avg_speed, avg_direction = data
+                    if time and avg_speed and avg_direction:
+                        level_data = ADCPLevelDataInfo.objects.filter(device_id=device_id).order_by('time')
+                        level_data2 = level_data.filter(time__range=(time + timedelta(minutes=-10), time + timedelta(minutes=10))).last()
+                        if level_data2:
+                            level = level_data2.level
+                        elif not level_data2 and level_data:
+                            level = level_data.last().level
+                        else:
+                            level = ""
+                        print(level)
+                        data_list.append({
+                            "time": datetime.strftime(time, "%Y-%m-%d %H:%M:%S"),
+                            "flow": "",
+                            "area": "",
+                            "avg_speed": "%.2f" % avg_speed,
+                            "avg_direction": "%.2f" % avg_direction,
+                            "level": level
+                        })
+            print(data_list)
         page2 = request.POST.get('page', '1')
         # print(len(all_wt_data))
-        paginator = Paginator(data_infos, length)
+        paginator = Paginator(data_list, length)
         try:
             data_page = paginator.page(page2)
         except PageNotAnInteger:
@@ -103,9 +149,9 @@ class ADCPDataInfoView(LoginRequiredMixin, View):
         #     })
         return JsonResponse({
             "draw": draw,
-            "recordsTotal": data_infos.count(),
-            "recordsFiltered": data_infos.count(),
-            "data": data
+            "recordsTotal": len(data_list),
+            "recordsFiltered": len(data_list),
+            "data": data_list
         })
 
 
