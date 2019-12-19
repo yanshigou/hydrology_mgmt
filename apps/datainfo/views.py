@@ -63,13 +63,14 @@ class ADCPDataInfoView(LoginRequiredMixin, View):
                   "deviceinfo.station_id=\'{station_id}\'" \
                   "GROUP BY adcpinfo.time ORDER BY adcpinfo.time"
             with connection.cursor() as cursor:
+                # print(sql.format(device_id=device_id, start_time=start_time, end_time=end_time, station_id=station_id))
                 cursor.execute(sql.format(device_id=device_id, start_time=start_time, end_time=end_time, station_id=station_id))
                 all_data = cursor.fetchall()
                 # print(all_data)
                 for data in all_data:
                     time, avg_speed, avg_direction = data
                     if time and avg_speed and avg_direction:
-                        print(time, avg_speed, avg_direction)
+                        # print(time, avg_speed, avg_direction)
                         level_data = ADCPLevelDataInfo.objects.order_by('time')
                         level_data2 = level_data.filter(
                             time__range=(time + timedelta(minutes=-10), time + timedelta(minutes=10))).last()
@@ -79,7 +80,7 @@ class ADCPDataInfoView(LoginRequiredMixin, View):
                             level = level_data.last().level
                         else:
                             level = ""
-                        print(level)
+                        # print(level)
                         data_list.append({
                             "time": datetime.strftime(time, "%Y-%m-%d %H:%M:%S"),
                             "flow": "未算",
@@ -88,7 +89,7 @@ class ADCPDataInfoView(LoginRequiredMixin, View):
                             "avg_direction": "%.2f" % avg_direction,
                             "level": level
                         })
-            print(data_list)
+            # print(data_list)
         else:
             sql = "SELECT adcpinfo.time, AVG(adcpinfo.speed) as avg_speed, AVG(adcpinfo.direction) as avg_direction " \
                   "from (SELECT datainfo_adcpdatainfo.time, datainfo_adcpdatainfo.speed, datainfo_adcpdatainfo.depth, " \
@@ -113,7 +114,7 @@ class ADCPDataInfoView(LoginRequiredMixin, View):
                             level = level_data.last().level
                         else:
                             level = ""
-                        print(level)
+                        # print(level)
                         data_list.append({
                             "time": datetime.strftime(time, "%Y-%m-%d %H:%M:%S"),
                             "flow": "",
@@ -122,7 +123,7 @@ class ADCPDataInfoView(LoginRequiredMixin, View):
                             "avg_direction": "%.2f" % avg_direction,
                             "level": level
                         })
-            print(data_list)
+            # print(data_list)
         page2 = request.POST.get('page', '1')
         # print(len(all_wt_data))
         paginator = Paginator(data_list, length)
@@ -133,20 +134,7 @@ class ADCPDataInfoView(LoginRequiredMixin, View):
         except EmptyPage:
             data_page = paginator.page(paginator.num_pages)
         print(data_page)
-        # data = []
-        # for i in data_page:
-        #     # TODO 每个时间点多条数据，需计算平均值
-        #     time = i.time
-        #     if time:
-        #         time = datetime.strftime(time, "%Y-%m-%d %H:%M:%S")
-        #     data.append({
-        #         "time": time,
-        #         "flow": "",
-        #         "area": "",
-        #         "avg_speed": i.speed,
-        #         "avg_direction": i.direction,
-        #         "level": ""
-        #     })
+
         return JsonResponse({
             "draw": draw,
             "recordsTotal": len(data_list),
