@@ -104,6 +104,9 @@
         <strong style="font-size: 15px; color: black">仪器名称：{{ device.name }} 仪器编号：{{ device.device_id }} 仪器类型：{{ device.device_type }}</strong>
 
         <p></p>
+        {% if valid_time_list %}
+        <div id="main2" style="width: 1200px;height: 400px;margin: 0 auto;"></div>
+        {% endif %}
         <div id="div_content">
             <!-- DataTales Example -->
             <div class="card shadow mb-4">
@@ -137,7 +140,7 @@
                 </div>
             </div>
         </div>
-        <div id="main" style="width: 800px;height: 400px;"></div>
+        <div id="main" style="width: 800px;height: 400px;margin: 0 auto;"></div>
     </div>
 {% endblock %}
 
@@ -285,6 +288,129 @@
             // 使用刚指定的配置项和数据显示图表。
             myChart.setOption(option);
             {#myChart.showLoading();#}
+
+        })
+    </script>
+    <script>
+        $(function () {
+            // 基于准备好的dom，初始化echarts实例
+            var myChart = echarts.init(document.getElementById('main2'));
+            var option = {
+                    toolbox: {
+                        show: true,
+                        feature: {
+                            saveAsImage: {
+                                show: true,
+                                excludeComponents:
+                                    ['toolbox'],
+                                title:
+                                    "导出",
+                                pixelRatio:
+                                    2
+                            }
+                        }
+                    },
+                    color: ["#000", "#032ddc",],
+                    title:
+                        {
+                            text: ''
+                        }
+                    ,
+                    tooltip: {}
+                    ,
+                    legend: {
+                        data: ['平均流速', '平均流向']
+                    }
+                    ,
+                    grid: {
+                        //left: '10%',
+                        //bottom: '25%',
+                        //right: '1%'
+                        containLabel: true
+                    }
+                    ,
+                    xAxis:
+                        {
+                            boundaryGap: false,
+                            nameGap: 30,
+                            name: '时间',
+                            nameLocation: "center",
+                            nameTextStyle: {
+                                color: "#000",
+                                //fontSize: 18,
+                                //fontFamily: "微软雅黑"
+                            },
+                            type: 'category',
+                            data: {{ valid_time_list|safe }},
+                            axisLabel: {
+                                color: "#000",
+                                {#showMinLabel: true,#}
+                                {#showMaxLabel: true#}
+                            }
+                            ,
+                            axisTick: {
+                                alignWithLabel: true
+                            }
+                        }
+                    ,
+                    yAxis: [
+                        {
+                            max: 4,
+                            mix: 0,
+                            maxInterval: 0.8,
+                            minInterval: 0.8,
+                            splitNumber: 5,
+                            boundaryGap: false,
+                            name: '平均流速（m/s）',
+                            nameLocation: "center",
+                            type: 'value',
+                            nameGap: 30,
+                            nameTextStyle: {
+                                fontSize: 14
+                            },
+                            //data: [0, 0.8, 1.6, 2.4, 3.2 ,4.0],
+                        },
+                        {
+                            max: 360,
+                            mix: 0,
+                            maxInterval: 60,
+                            minInterval: 60,
+                            splitNumber: 5,
+                            boundaryGap: false,
+                            name: '平均流向（°）',
+                            nameLocation: "center",
+                            position: "right",
+                            type: 'value',
+                            nameGap: 60,
+                            nameTextStyle: {
+                                fontSize: 14
+                            },
+                            //data: [0, 0.8, 1.6, 2.4, 3.2 ,4.0],
+                        }
+                    ],
+                    dataZoom: [],
+                    series:
+                        [
+                            {
+                                yAxisIndex: 0,
+                                name: "平均流速",
+                                type: "line",
+                                data: {{ valid_avg_speed_list|safe }}
+                            },
+                            {
+                                yAxisIndex: 1,
+                                name: "平均流向",
+                                type: "line",
+                                data: {{ valid_avg_direction_list|safe }}
+                            },
+                        ]
+
+
+                }
+            ;
+            // 使用刚指定的配置项和数据显示图表。
+            //myChart.showLoading();
+            myChart.setOption(option);
 
         })
     </script>

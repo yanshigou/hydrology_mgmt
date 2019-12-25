@@ -5,7 +5,7 @@
     <meta charset="utf-8">
     <meta http-equiv="X-UA-Compatible" content="chrome=1">
     <meta name="viewport" content="initial-scale=1.0, user-scalable=no, width=device-width">
-{#    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/>#}
+    {#    <link rel="stylesheet" href="https://a.amap.com/jsapi_demos/static/demo-center/css/demo-center.css"/>#}
     <style type="text/css">
         body, html, #container {
             height: 100%;
@@ -46,7 +46,7 @@
 </head>
 <body>
 <div id="container" tabindex="0"></div>
-<script src="https://webapi.amap.com/maps?v=1.4.15&key=5cda232d2d1f782a634096167304eb59"></script>
+<script src="https://webapi.amap.com/maps?v=1.4.15&key=5cda232d2d1f782a634096167304eb59&&plugin=AMap.Scale,AMap.OverView,AMap.ToolBar"></script>
 <script src="{% static 'vendor/jquery/jquery.min.js' %}"></script>
 <script type="text/javascript">
     var station_data = {{ station_data|safe }};
@@ -66,13 +66,13 @@
     var map = new AMap.Map('container', {resizeEnable: true, zoom: 4});
     var markers = []; //province见Demo引用的JS文件
     var host = location.host;
-    console.log(host);
+    //console.log(host);
     for (var i = 0; i < provinces.length; i += 1) {
         var marker;
         var station_id = provinces[i].station_id;
-        console.log(station_id);
+        //console.log(station_id);
         var src = 'http://' + host + '/station/stationIndex/' + station_id + '/';
-        console.log(src);
+        //console.log(src);
         var content = "<div class='input-card content-window-card'><a onclick=\"javascript:top.location.href='" + src + "'\">" + provinces[i].name + "</a></div>";
         var icon;
         if (provinces[i].type === 0) {
@@ -91,7 +91,7 @@
 
         } else {
             icon = new AMap.Icon({
-                image: 'http://' + host + '/media/image/station_24_2.png',
+                image: 'http://' + host + '/media/image/station_black.png',
                 size: new AMap.Size(24, 24),
             });
             marker = new AMap.Marker({
@@ -104,7 +104,7 @@
             });
 
         }
-        guzhang = new AMap.Marker({
+        title_text = new AMap.Marker({
             content: content,
             position: provinces[i].center.split(','),
             title: provinces[i].name,
@@ -114,7 +114,55 @@
         markers.push(marker);
     }
     map.setFitView();
+    if (provinces.length <= 1) {
+        console.log(provinces.length);
+        map.setZoom(14);   // 设置地图层级大小
+    }
+    AMap.plugin([
+        'AMap.ToolBar',
+    ], function(){
+        // 在图面添加工具条控件，工具条控件集成了缩放、平移、定位等功能按钮在内的组合控件
+        map.addControl(new AMap.ToolBar({
+            // 简易缩放模式，默认为 false
+            liteStyle: true
+        }));
+    });
 </script>
-
+<script>
+    var scale = new AMap.Scale({
+        visible: false
+    }),
+    toolBar = new AMap.ToolBar({
+        visible: false
+    }),
+    overView = new AMap.OverView({
+        visible: false
+    });
+    map.addControl(scale);
+    map.addControl(toolBar);
+    map.addControl(overView);
+    scale.show(); // 显示比例尺
+    showToolBar();  // 工具条
+    showToolBarDirection(); //方向盘
+    showToolBarRuler();  // 工具条标尺
+    function showToolBar() {
+        toolBar.show();
+    }
+    function hideToolBar() {
+        toolBar.hide();
+    }
+    function showToolBarDirection() {
+        toolBar.showDirection();
+    }
+    function hideToolBarDirection() {
+        toolBar.hideDirection();
+    }
+    function showToolBarRuler() {
+        toolBar.showRuler();
+    }
+    function hideToolBarRuler() {
+        toolBar.hideRuler();
+    }
+</script>
 </body>
 </html>
