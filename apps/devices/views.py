@@ -2,7 +2,7 @@ from django.shortcuts import render
 from django.views import View
 from django.http import HttpResponseRedirect, JsonResponse
 from django.core.urlresolvers import reverse
-
+from django.db import connection
 from .models import DevicesInfo, StationInfo
 from datainfo.models import ADCPDataInfo, ADCPLevelDataInfo
 from .forms import DevicesInfoForm, DevicesStatusForm
@@ -236,23 +236,62 @@ class DeviceDataInfoView(LoginRequiredMixin, View):
             device = DevicesInfo.objects.get(station__company_id=company_id, id=device_id)
         station_id = device.station_id
         data_info = list()
+        valid_time_list = list()
+        valid_time_srt_list = list()
+        valid_avg_speed_list = list()
+        valid_avg_direction_list = list()
         device_type = device.device_type
+        sql = "SELECT adcpinfo.time, AVG(adcpinfo.speed) as avg_speed, AVG(adcpinfo.direction) as avg_direction " \
+              "from (SELECT datainfo_adcpdatainfo.time, datainfo_adcpdatainfo.speed, datainfo_adcpdatainfo.depth, " \
+              "datainfo_adcpdatainfo.direction, datainfo_adcpdatainfo.distance FROM datainfo_adcpdatainfo " \
+              "WHERE device_id=\'{device_id}\' AND datainfo_adcpdatainfo.time >= \'{start_time}\' " \
+              "AND datainfo_adcpdatainfo.time <= \'{end_time}\' ) adcpinfo  " \
+              "RIGHT JOIN (SELECT station_id FROM devices_devicesinfo) deviceinfo on " \
+              "deviceinfo.station_id=\'{station_id}\'" \
+              "GROUP BY adcpinfo.time ORDER BY adcpinfo.time"
+        with connection.cursor() as cursor:
+            cursor.execute(
+                sql.format(device_id=device_id, start_time=start_time, end_time=end_time, station_id=station_id))
+            all_data = cursor.fetchall()
+            # print(all_data)
+            for data in all_data:
+                valid_time, avg_speed, avg_direction = data
+                if valid_time and avg_speed and avg_direction:
+                    valid_time_list.append(valid_time)
+                    valid_time_srt_list.append(datetime.strftime(valid_time, "%Y-%m-%d %H:%M:%S"))
+                    valid_avg_speed_list.append(avg_speed)
+                    valid_avg_direction_list.append(avg_direction)
+            #         level_data = ADCPLevelDataInfo.objects.filter(device_id=device_id).order_by('time')
+            #         level_data2 = level_data.filter(
+            #             time__range=(time + timedelta(minutes=-10), time + timedelta(minutes=10))).last()
+            #         if level_data2:
+            #             level = level_data2.level
+            #         elif not level_data2 and level_data:
+            #             level = level_data.last().level
+            #         else:
+            #             level = ""
+
         if device_type == "走航式ADCP":
             while True:
-                time_list.append(time)
+                if time in valid_time_list:
+                    time_list.append(time)
                 time = time + timedelta(minutes=10)
                 # print(time)
                 if time > end_time:
                     break
         if device_type == "水平式ADCP":
             while True:
-                time_list.append(time)
+                if time in valid_time_list:
+                    time_list.append(time)
                 time = time + timedelta(minutes=5)
                 # print(time)
                 if time > end_time:
                     break
         # print(time_list)
-        last_time = time_list[-1]
+        if not time_list:
+            last_time = datetime.now()
+        else:
+            last_time = time_list[-1]
         # print(last_time)
 
         adcp_data_infos = ADCPDataInfo.objects.filter(device_id=device.id, time=last_time)
@@ -284,6 +323,9 @@ class DeviceDataInfoView(LoginRequiredMixin, View):
                 "data_info": data_info,
                 "start_time": start_time,
                 "end_time": end_time,
+                "valid_time_list": valid_time_srt_list,
+                "valid_avg_speed_list": valid_avg_speed_list,
+                "valid_avg_direction_list": valid_avg_direction_list
             })
         if device_type == "水平式ADCP":
             distance_list = list()
@@ -310,6 +352,9 @@ class DeviceDataInfoView(LoginRequiredMixin, View):
                 "data_info": data_info,
                 "start_time": start_time,
                 "end_time": end_time,
+                "valid_time_list": valid_time_srt_list,
+                "valid_avg_speed_list": valid_avg_speed_list,
+                "valid_avg_direction_list": valid_avg_direction_list
             })
 
     def post(self, request, device_id):
@@ -328,18 +373,45 @@ class DeviceDataInfoView(LoginRequiredMixin, View):
             device = DevicesInfo.objects.get(station__company_id=company_id, id=device_id)
         station_id = device.station_id
         data_info = list()
+        valid_time_list = list()
+        valid_time_srt_list = list()
+        valid_avg_speed_list = list()
+        valid_avg_direction_list = list()
         device_type = device.device_type
+        sql = "SELECT adcpinfo.time, AVG(adcpinfo.speed) as avg_speed, AVG(adcpinfo.direction) as avg_direction " \
+              "from (SELECT datainfo_adcpdatainfo.time, datainfo_adcpdatainfo.speed, datainfo_adcpdatainfo.depth, " \
+              "datainfo_adcpdatainfo.direction, datainfo_adcpdatainfo.distance FROM datainfo_adcpdatainfo " \
+              "WHERE device_id=\'{device_id}\' AND datainfo_adcpdatainfo.time >= \'{start_time}\' " \
+              "AND datainfo_adcpdatainfo.time <= \'{end_time}\' ) adcpinfo  " \
+              "RIGHT JOIN (SELECT station_id FROM devices_devicesinfo) deviceinfo on " \
+              "deviceinfo.station_id=\'{station_id}\'" \
+              "GROUP BY adcpinfo.time ORDER BY adcpinfo.time"
+
+        with connection.cursor() as cursor:
+            cursor.execute(
+                sql.format(device_id=device_id, start_time=start_time, end_time=end_time, station_id=station_id))
+            all_data = cursor.fetchall()
+            # print(all_data)
+            for data in all_data:
+                valid_time, avg_speed, avg_direction = data
+                if valid_time and avg_speed and avg_direction:
+                    valid_time_list.append(valid_time)
+                    valid_time_srt_list.append(datetime.strftime(valid_time, "%Y-%m-%d %H:%M:%S"))
+                    valid_avg_speed_list.append(avg_speed)
+                    valid_avg_direction_list.append(avg_direction)
 
         if device_type == "走航式ADCP":
             while True:
-                time_list.append(time)
+                if time in valid_time_list:
+                    time_list.append(time)
                 time = time + timedelta(minutes=10)
                 # print(time)
                 if time > end_time:
                     break
         if device_type == "水平式ADCP":
             while True:
-                time_list.append(time)
+                if time in valid_time_list:
+                    time_list.append(time)
                 time = time + timedelta(minutes=5)
                 # print(time)
                 if time > end_time:
@@ -348,9 +420,18 @@ class DeviceDataInfoView(LoginRequiredMixin, View):
         # last_time = time_list[-1]
         # print(last_time)
 
-        time = request.POST.get("time")
+        select_time = request.POST.get("time")
         # print(time)
-        adcp_data_infos = ADCPDataInfo.objects.filter(device_id=device.id, time=time)
+        if select_time:
+            select_time = datetime.strptime(select_time, "%Y-%m-%d %H:%M:%S")
+        elif not time_list:
+            select_time = datetime.now()
+        else:
+            select_time = time_list[-1]
+        print(select_time)
+        print(type(select_time))
+
+        adcp_data_infos = ADCPDataInfo.objects.filter(device_id=device.id, time=select_time)
         if device_type == "走航式ADCP":
             depth_list = list()
             speed_list = list()
@@ -368,7 +449,7 @@ class DeviceDataInfoView(LoginRequiredMixin, View):
             return render(request, 'device_data_info.html', {
                 "device": device,
                 "time_list": time_list,
-                "last_time": datetime.strptime(time, "%Y-%m-%d %H:%M:%S"),
+                "last_time": select_time,
                 "depth_list": depth_list,
                 "speed_list": speed_list,
                 "direction_list": direction_list,
@@ -376,6 +457,9 @@ class DeviceDataInfoView(LoginRequiredMixin, View):
                 "data_info": data_info,
                 "start_time": start_time,
                 "end_time": end_time,
+                "valid_time_list": valid_time_srt_list,
+                "valid_avg_speed_list": valid_avg_speed_list,
+                "valid_avg_direction_list": valid_avg_direction_list
             })
         if device_type == "水平式ADCP":
             distance_list = list()
@@ -394,7 +478,7 @@ class DeviceDataInfoView(LoginRequiredMixin, View):
             return render(request, 'device2_data_info.html', {
                 "device": device,
                 "time_list": time_list,
-                "last_time": datetime.strptime(time, "%Y-%m-%d %H:%M:%S"),
+                "last_time": select_time,
                 "distance_list": distance_list,
                 "speed_list": speed_list,
                 "direction_list": direction_list,
@@ -402,4 +486,7 @@ class DeviceDataInfoView(LoginRequiredMixin, View):
                 "data_info": data_info,
                 "start_time": start_time,
                 "end_time": end_time,
+                "valid_time_list": valid_time_srt_list,
+                "valid_avg_speed_list": valid_avg_speed_list,
+                "valid_avg_direction_list": valid_avg_direction_list
             })
